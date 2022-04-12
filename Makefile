@@ -20,7 +20,7 @@ nossomal.o:
 	as nossomal.s -o nossomal.o 
 
 main.o: 
-	gcc -c main.c
+	gcc -c -g main.c
 
 clear:
 	rm *.o 

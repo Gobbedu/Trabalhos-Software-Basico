@@ -1,23 +1,30 @@
 #include <stdio.h>
 
-extern void* nossomal();
-extern void* inicia_alocador();
+extern void inicia_alocador();
 extern void* finaliza_alocador();
+extern void* nossomal();
+extern void* getBrk();
 // extern void testee(); // from teste.s, teste.o
 
 int main(void){
-	int x;
+	int x, a, b;
 	void* adr;
 
-	// testee();
-	adr = inicia_alocador();
-	printf("brk inicial  %p\n", adr);
+	printf("\n\nbrk inicial\t\t %p\n",getBrk());
+	printf("brk com print\t\t %p\n", getBrk());
 
-	adr = nossomal();
-	printf("global var %p\n", adr);
 
-	adr = finaliza_alocador();
-	printf("brk  %p\n", adr);
+	inicia_alocador();
+	printf("inicia alocador \n");
+
+	printf("brk dpois de alocar\t %p\n", getBrk());
+
+	// a = (int)getBrk();
+	// b = (int)(getBrk() + 1);
+	// printf("valor brk[0]: %i\nvalor brk[1]: %i\n", a, b);
+
+	finaliza_alocador();
+	printf("brk finaliza alocador\t %p\n", getBrk());
 
 	return 0;
 }
