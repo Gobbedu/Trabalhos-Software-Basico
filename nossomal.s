@@ -51,14 +51,14 @@ inicia_alocador:
 	movq %rbx, 8(%rax)						# inicio_heap[1] = tam disponivel (4096)
 	movq LIVRE, %rbx						# rbx = LIVRE
 	movq %rbx, (%rax)						# inicio_heap[0] = bloco seguinte esta LIVRE
-
+	ret
 
 finaliza_alocador:
 
 	# reposiciona brk para o endereco inicial (TODO)
-	# movq $12, %rax 							# resize brk
-	# movq inicio_heap, %rdi							# nova altura
-	# syscall 
+	movq $12, %rax 							# resize brk
+	movq inicio_heap, %rdi							# nova altura
+	syscall 
 	
 	# call getBrk								# devolve altura inicial de brk
 	# movq inicio_heap, %rax
