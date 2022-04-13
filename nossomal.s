@@ -189,7 +189,6 @@ fusao:
 	ret
 
 liberaMem:
-	# movq $LIVRE, -16(%rdi) # espaço de memoria livre
 	movq LIVRE, %rax
 	movq %rax, -16(%rdi)
 	
