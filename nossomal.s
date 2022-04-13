@@ -165,13 +165,6 @@ fim_alocaMem:
 	ret
 
 fusao:
-	# movq %rdi, %rbx 
-	# addq -8, %rbx
-	# movq %rbx, %rcx
-	# addq (%rbx), %rcx
-	# addq 8, %rcx
-	# cmpq $0, (%rcx)
-
 	#
 	# pega o inicio da heap
 	# verifica se IG = LIVRE
@@ -189,13 +182,18 @@ fusao:
 		# faça isso ate encontrar um bloco ocupado	
 	# faça isso ate o final do bloco maior
 	#
+	movq $inicio_heap, %rax
+	cmpq $0, (%rax)
+	# movq 
 
 	ret
 
 liberaMem:
-	movq $LIVRE, -16(%rdi) # espaço de memoria livre
+	# movq $LIVRE, -16(%rdi) # espaço de memoria livre
+	movq LIVRE, %rax
+	movq %rax, -16(%rdi)
 	
-	call fusao
+	# call fusao
 
 	ret
 
