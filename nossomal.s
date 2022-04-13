@@ -19,60 +19,25 @@
 
 # recebe em %rdi o tamanho a ser alocado
 # devolve em %rax o endereco do bloco alocado
-# ALOCAMEM TA PELA METADE, FALTA PEDACO
-alocaMem(tamAalocar){
-	aux = tentaAlocar(tamAalocar);
-	while( aux == -1)					
-	{
-		if( olhos + tamAalocar + 16 < final_heap){
-			aux = tentaAlocar(tamAalocar);
-		}
-		else if( cirular == 1 ) # ja deu a volta
-		{
-			aumenta heap + 4096
-			aux = -1
-			continue 
-		}
-		else{
-			circular = 1
-			
-		}
-		
-	}
+# PSEUDO CODIGO =>
+loop:
+	if(cabe):							# LIVRE && tamAloc +16 < tamNodo 
+		aloca tamAloc					# seta IG
+		circular = 0					# reinicia flag da volta
+		return endereco					# return 16(olhos) 1o byte acessivel
+	if(nao_cabe):						# else
+		if(proximo):					# 8(olhos) + tamAloc + 16 < final_heap
+			proximo						# olhos = olhos + 8(olhos) + 8     // nn tenho ctz 
+		if(nao_proximo):				# else
+			if(circular == 0):			# se bateu na heap e nao deu a volta, da a volta
+				circular = 1
+				olhos = inicio_heap
+				jmp loop
+			if(circular == 1):			# se bateu na heap e deu volta
+				aumenta heap			# aumenta heap
+				seta IG 				
+				jmp loop				# procura dnv, se nn couber ainda, cai aki dnv
 
-}
-
-# A principio eh pra estar ok esse pseudo-cod
-tentaAlocar(tamAalocar)
-{
-	if(olhos == LIVRE)
-	{
-		if(olhos[1] < tamAalocar)		# se bloco nao comporta tamanho a alocar, 
-		{
-			proximo no				# proximo nó, atualiza olhos
-			continue 				# comeca a analisar novo nó do inicio
-			return -1
-		}
-		else{
-			olhos[0] = OCUPADO
-			olhos[1] = tamAalocar
-
-			if(olhos[tamAalocar + 24] < final_heap) # se tem espaco pra alocar pelo menos 1 byte dpois desse no
-			{
-				olhos[tamAalocar + 8] = LIVRE
-				olhos[tamAalocar +16] = tam - tamAalocar
-			}
-
-			return endereco de olhos[16]
-		}
-	}
-	else
-	{
-		proximo no
-		continue
-		return -1
-	}
-}
 
 
 # retorna o endereco de brk em rax 
