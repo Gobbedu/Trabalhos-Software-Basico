@@ -164,46 +164,42 @@ nao_cabe:
 fim_alocaMem:
 	ret
 
+ocupado:
+	addq 8(%rbx), %rbx 		# proximo bloco de memoria
+	addq $16, %rbx
+	movq %rbx, %rcx
+	cmpq $LIVRE, (%rbx) 	# se o primeiro bloco estiver livre
+	je varredura
+	cmpq $OCUPA, (%rbx) 	# se o bloco estiver ocupado
+	je ocupado
+	ret
+
 soma_ful:
 	addq 8(%rbx), %rax
 	ret
 
 varredura:
-	movq %rbx, %rcx
-	addq 8(%rcx), %rcx 		# proximo bloco de memoria
-	addq $16, %rcx
-	cmpq $LIVRE, (%rcx) 		# se livre
+	cmpq $LIVRE, (%rcx) 	# se livre
 	je soma_ful				# soma ao tamanho do bloco anterior
 	addq 8(%rcx), %rcx 		# proximo bloco de memoria
 	addq $16, %rcx
 	movq %rcx, %rbx
-	cmpq $LIVRE, (%rcx) 		# se livre
+	cmpq $LIVRE, (%rcx) 	# se livre
 	je varredura
+	cmpq $OCUPA, (%rcx) 	# se o bloco estiver ocupado
+	je ocupado
 	ret
 
 fusao:
-	#
-	# pega o inicio da heap
-	# verifica se IG = LIVRE
-	# se sim, guarda o endereço
-	# va para o proximo bloco de memoria
-	# se livre, soma o tamanho dele no tamanho do bloco anterior
-	# 		va para o proximo endereço de memoria
-	# 		se livre, soma o tamanho dele no tamanho do primeiro bloco
-	# 		faça isso ate encontrar um bloco ocupado
-	# se ocupado, descarta o endereço guardado
-	#		va para o proximo endereço de memoria livre
-	#		guarde esse endereço
-	#		va para o proximo endereço de memoria
-	#		se livre, soma o tamanho dele no tamanho do bloco guardado
-	#		faça isso ate encontrar um bloco ocupado	
-	# faça isso ate o final do bloco maior
-	#
 	movq $inicio_heap, %rax # inicio da heap vai pra %rax
 	movq %rax, %rbx 		# guarda o endereço
+	movq %rbx, %rcx
+	addq 8(%rcx), %rcx 		# proximo bloco de memoria
+	addq $16, %rcx
 	cmpq $LIVRE, (%rax) 	# se o primeiro bloco estiver livre
 	je varredura			# inicia a varredura
-	
+	cmpq $OCUPA, (%rax) 	# se o bloco estiver ocupado
+	je ocupado
 	ret
 
 liberaMem:
