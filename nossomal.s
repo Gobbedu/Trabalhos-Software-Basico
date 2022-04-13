@@ -35,9 +35,9 @@ iniciaAlocador:
 	movq Block_size, %r10					# r10 = Block_size
 	# imul $8, %r10							# r10 *= 8
 	addq $16, %r10							# r10 += sizeof(IG)
-	addq %r10, %rbx 						# rbx = inicio_heap + Block_size*8 + 16
+	addq %r10, %rbx 						# rbx = inicio_heap + Block_size + 16
 
-	# empurra brk pra baixo => brk = brk + 8*Block_size
+	# empurra brk pra baixo => brk = brk + Block_size
 	movq $12, %rax
 	movq %rbx, %rdi
 	syscall
