@@ -19,9 +19,9 @@ int main(void){
 
 	printf("brk dpois de alocar\t %p\n", getBrk());
 
-	// a = (int)getBrk();
-	// b = (int)(getBrk() + 1);
-	// printf("valor brk[0]: %i\nvalor brk[1]: %i\n", a, b);
+	a = (int)getBrk();
+	b = (int)(getBrk() + 1);
+	printf("valor brk[0]: %i\nvalor brk[1]: %i\n", a, b);
 
 	finaliza_alocador();
 	printf("brk finaliza alocador\t %p\n", getBrk());

@@ -7,7 +7,7 @@
 
 .section .text
 
-.globl nossomal, inicia_alocador, finaliza_alocador, alocaMem, freeMem, getBrk
+.globl nossomal, iniciaAlocador, finalizaAlocador, alocaMem, liberaMem, getBrk
 
 # retorna o endereco de brk em rax 
 getBrk:
@@ -16,7 +16,7 @@ getBrk:
 	syscall # brk comes on %rax, 
 	ret		# returns %rax
 
-inicia_alocador:
+iniciaAlocador:
 	# ||<= %brk
 	# | L | 4096 |  ---- 4096 ---- |<= %brk
 
@@ -53,7 +53,7 @@ inicia_alocador:
 	movq %rbx, (%rax)						# inicio_heap[0] = bloco seguinte esta LIVRE
 	ret
 
-finaliza_alocador:
+finalizaAlocador:
 
 	# reposiciona brk para o endereco inicial (TODO)
 	movq $12, %rax 							# resize brk
