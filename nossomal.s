@@ -17,13 +17,6 @@ getBrk:
 	syscall # brk comes on %rax, 
 	ret		# returns %rax
 
-
-#retorna em %rax o conteudo do endereco recebido em %rdi
-getConteudo:
-	movq (%rdi), %rax
-	ret
-
-
 iniciaAlocador:
 	# ||<= %brk
 	# | L | 4096 |  ---- 4096 ---- |<= %brk
@@ -76,8 +69,9 @@ finalizaAlocador:
 	ret
 
 
-nossomal:
-	call getBrk 							# devolve altura inicial de brk
+liberaMem:
+	movq $LIVRE, -16(%rdi) # espaço de memoria livre
 	ret
 
+alocaMem:
 
