@@ -1,14 +1,79 @@
 .section .data
-	inicio_heap: 	.quad 0
-	Block_size:		.quad 4096
-	LIVRE: 			.quad 0
-	OCUPA:			.quad 1
+	inicio_heap: 	.quad 0			# valor inicial da heap, antes do iniciaAlocador
+	final_heap:		.quad 0			# valor final da heap, em qualquer dado momento
+	Block_size:		.quad 4096		# tamanho dos blocos alocados, quando heap cheia
+	LIVRE: 			.quad 0			# bool que representa um bloco LIVRE
+	OCUPA:			.quad 1			# bool que representa um bloco OCUPADO
+	
+	olhos:			.quad 0			# variavel que contem o ultimo nó analizado
+	circular:		.quad 0			# se olhos ja circularam na heap, $1, else $0, usamos pra
+									# decidir se é preciso aumentar a heap ou nao
+
 	strinit:		.string ""
 	straux: 		.string "brk[0 e 1]: %i %i\n"
 
 .section .text
 
 .globl nossomal, iniciaAlocador, finalizaAlocador, alocaMem, liberaMem, getBrk, getConteudo
+
+
+# recebe em %rdi o tamanho a ser alocado
+# devolve em %rax o endereco do bloco alocado
+# ALOCAMEM TA PELA METADE, FALTA PEDACO
+alocaMem(tamAalocar){
+	aux = tentaAlocar(tamAalocar);
+	while( aux == -1)					
+	{
+		if( olhos + tamAalocar + 16 < final_heap){
+			aux = tentaAlocar(tamAalocar);
+		}
+		else if( cirular == 1 ) # ja deu a volta
+		{
+			aumenta heap + 4096
+			aux = -1
+			continue 
+		}
+		else{
+			circular = 1
+			
+		}
+		
+	}
+
+}
+
+# A principio eh pra estar ok esse pseudo-cod
+tentaAlocar(tamAalocar)
+{
+	if(olhos == LIVRE)
+	{
+		if(olhos[1] < tamAalocar)		# se bloco nao comporta tamanho a alocar, 
+		{
+			proximo no				# proximo nó, atualiza olhos
+			continue 				# comeca a analisar novo nó do inicio
+			return -1
+		}
+		else{
+			olhos[0] = OCUPADO
+			olhos[1] = tamAalocar
+
+			if(olhos[tamAalocar + 24] < final_heap) # se tem espaco pra alocar pelo menos 1 byte dpois desse no
+			{
+				olhos[tamAalocar + 8] = LIVRE
+				olhos[tamAalocar +16] = tam - tamAalocar
+			}
+
+			return endereco de olhos[16]
+		}
+	}
+	else
+	{
+		proximo no
+		continue
+		return -1
+	}
+}
+
 
 # retorna o endereco de brk em rax 
 getBrk:
@@ -58,11 +123,13 @@ iniciaAlocador:
 	movq %rbx, 8(%rax)						# inicio_heap[1] = tam disponivel (4096)
 	movq LIVRE, %rbx						# rbx = LIVRE
 	movq %rbx, (%rax)						# inicio_heap[0] = bloco seguinte esta LIVRE
+	movq %rax, olhos						# inicia olhos para primeiro nó
 
-	movq (%rax), %rsi 
-	movq 8(%rax), %rdx
-	movq $straux, %rdi
-	call printf
+	# imprime conteudo da IG
+	# movq (%rax), %rsi 	
+	# movq 8(%rax), %rdx
+	# movq $straux, %rdi
+	# call printf
 
 	ret
 
