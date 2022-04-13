@@ -1,5 +1,5 @@
 .section .data
-	inicio_heap: 	.quad 0
+	topoInicialHeap: 	.quad 0
 	Block_size:		.quad 4096
 	LIVRE: 			.quad 0
 	OCUPA:			.quad 1
@@ -28,14 +28,14 @@ iniciaAlocador:
 	movq $12, %rax							# comando: cade brk?
 	movq $0, %rdi							# me diga pfr
 	syscall 								# brk vem no %rax
-	movq %rax, inicio_heap						# inicio_heap = endereco de brk
+	movq %rax, topoInicialHeap						# topoInicialHeap = endereco de brk
 
 	# aumenta heap em Block_size bytes + IG
-	movq inicio_heap, %rbx						# rbx = brk
+	movq topoInicialHeap, %rbx						# rbx = brk
 	movq Block_size, %r10					# r10 = Block_size
 	# imul $8, %r10							# r10 *= 8
 	addq $16, %r10							# r10 += sizeof(IG)
-	addq %r10, %rbx 						# rbx = inicio_heap + Block_size*8 + 16
+	addq %r10, %rbx 						# rbx = topoInicialHeap + Block_size*8 + 16
 
 	# empurra brk pra baixo => brk = brk + 8*Block_size
 	movq $12, %rax
@@ -43,25 +43,25 @@ iniciaAlocador:
 	syscall
 
 	# registra INFORMACOES GERENCIAIS (IG)
-	# inicio_heap = Livre/Ocupado
-	# 8(inicio_heap) = tamanho Livre/Ocupado  
+	# topoInicialHeap = Livre/Ocupado
+	# 8(topoInicialHeap) = tamanho Livre/Ocupado  
 	# tam total disp = tam bloco - tam IG
-	movq inicio_heap, %rax						# rax = inicio_heap
+	movq topoInicialHeap, %rax						# rax = topoInicialHeap
 	movq Block_size, %rbx					# rbx = 4096
-	movq %rbx, 8(%rax)						# inicio_heap[1] = tam disponivel (4096)
+	movq %rbx, 8(%rax)						# topoInicialHeap[1] = tam disponivel (4096)
 	movq LIVRE, %rbx						# rbx = LIVRE
-	movq %rbx, (%rax)						# inicio_heap[0] = bloco seguinte esta LIVRE
+	movq %rbx, (%rax)						# topoInicialHeap[0] = bloco seguinte esta LIVRE
 	ret
 
 finalizaAlocador:
 
 	# reposiciona brk para o endereco inicial (TODO)
 	movq $12, %rax 							# resize brk
-	movq inicio_heap, %rdi							# nova altura
+	movq topoInicialHeap, %rdi							# nova altura
 	syscall 
 	
 	# call getBrk								# devolve altura inicial de brk
-	# movq inicio_heap, %rax
+	# movq topoInicialHeap, %rax
 
 
 nossomal:
