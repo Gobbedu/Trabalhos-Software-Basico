@@ -7,26 +7,26 @@ outformat:
 .section .text
 .equ LOCAL_BUFFER, -8
 main:
-    # Allocate one local variable (aligned to 16 bytes)
+    # Aloque uma variável local (alinhada a 16 bytes)
     enter $16, $0
-    # Get the memory and store it in our local variable
+    # Obtenha a memória e armazene-a em nossa variável local
     movq $500, %rdi
     call malloc
     movq %rax, LOCAL_BUFFER(%rbp)
     movq $5, (%rax)
-    # Read the data from stdin
+    # Leia os dados do stdin
     movq stdin, %rdi
     movq $scanformat, %rsi
     movq LOCAL_BUFFER(%rbp), %rdx
     movq $0, %rax
     call fscanf
-    # Write the data to stdout
+    # Escreva os dados para stdout
     movq stdout, %rdi
     movq $outformat, %rsi
     movq LOCAL_BUFFER(%rbp), %rdx
     movq $0, %rax
     call fprintf
-    # Free the buffer
+    # Libere o buffer
     movq LOCAL_BUFFER(%rbp), %rdi
     call free
     # Return

@@ -82,13 +82,6 @@ getBrk:
 	syscall # brk comes on %rax, 
 	ret		# returns %rax
 
-
-#retorna em %rax o conteudo do endereco recebido em %rdi
-getConteudo:
-	movq (%rdi), %rax
-	ret
-
-
 iniciaAlocador:
 	# ||<= %brk
 	# | L | 4096 |  ---- 4096 ---- |<= %brk
@@ -107,9 +100,9 @@ iniciaAlocador:
 	movq inicio_heap, %rbx					# rbx = brk
 	movq Block_size, %r10					# r10 = Block_size
 	addq $16, %r10							# r10 += sizeof(IG)
-	addq %r10, %rbx 						# rbx = inicio_heap + Block_size*8 + 16
+	addq %r10, %rbx 						# rbx = inicio_heap + Block_size + 16
 
-	# empurra brk pra baixo => brk = brk + 8*Block_size
+	# empurra brk pra baixo => brk = brk + Block_size
 	movq $12, %rax
 	movq %rbx, %rdi
 	syscall
@@ -143,8 +136,9 @@ finalizaAlocador:
 	ret
 
 
-nossomal:
-	call getBrk 							# devolve altura inicial de brk
+liberaMem:
+	movq $LIVRE, -16(%rdi) # espaço de memoria livre
 	ret
 
+alocaMem:
 
