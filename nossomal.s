@@ -174,7 +174,7 @@ fusao:
 
 	#
 	# pega o inicio da heap
-	# verifica se = 0
+	# verifica se IG = LIVRE
 	# se sim, guarda o endereço
 	# va para o proximo bloco de memoria
 	# se livre, soma o tamanho dele no tamanho do bloco anterior
