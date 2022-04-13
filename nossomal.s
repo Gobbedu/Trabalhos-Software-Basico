@@ -100,9 +100,39 @@ finalizaAlocador:
 	
 	ret
 
+fusao:
+	# movq %rdi, %rbx 
+	# addq -8, %rbx
+	# movq %rbx, %rcx
+	# addq (%rbx), %rcx
+	# addq 8, %rcx
+	# cmpq $0, (%rcx)
+
+	#
+	# pega o inicio da heap
+	# verifica se = 0
+	# se sim, guarda o endereço
+	# va para o proximo bloco de memoria
+	# se livre, soma o tamanho dele no tamanho do bloco anterior
+		# va para o proximo endereço de memoria
+		# se livre, soma o tamanho dele no tamanho do primeiro bloco
+		# faça isso ate encontrar um bloco ocupado
+	# se ocupado, descarta o endereço guardado
+		# va para o proximo endereço de memoria livre
+		# guarde esse endereço
+		# va para o proximo endereço de memoria
+		# se livre, soma o tamanho dele no tamanho do bloco guardado
+		# faça isso ate encontrar um bloco ocupado	
+	# faça isso ate o final do bloco maior
+	#
+
+	ret
 
 liberaMem:
 	movq $LIVRE, -16(%rdi) # espaço de memoria livre
+	
+	call fusao
+
 	ret
 
 alocaMem:
