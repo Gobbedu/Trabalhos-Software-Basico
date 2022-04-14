@@ -52,18 +52,18 @@ int main(void){
 
 
 	liberaMem(banana);
-	printf("LIBEROU ALLOC\n");
+	printf("LIBEROU BANANA\n");
 
 	banana = getInit();
-	printf("ender inicial is:"); 
+	printf("nodo inicial is:"); 
 	printIG(banana, 0);
 
 	adr = banana + 3;  // endereco proximo IG = adr + tam bloco + 16(tam IG)
-	printf("banana is: ");
+	printf("nodo 2 is: ");
 	printIG(adr, 16);
 
 	adr += 21;
-	printf("ptr is: ");
+	printf("nodo 3 is: ");
 	printIG(adr, 16);
 
 	finalizaAlocador();
