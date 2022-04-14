@@ -11,10 +11,13 @@
 
 	strinit:		.string "inicia printf\n"
 	straux: 		.string "brk[0 e 1]: %i %i\n"
+	naocabestr:		.string "nao cabe\n"
+	circulastr:		.string "circular eh : %i\n"
 
 .section .text
 
-.globl nossomal, iniciaAlocador, finalizaAlocador, alocaMem, liberaMem, getBrk, getInit
+.globl iniciaAlocador, finalizaAlocador, alocaMem, liberaMem, getBrk, getInit, 
+# nao_cabe, nao_proximo, deu_volta,
 
 
 # retorna o endereco de brk em rax 
@@ -61,7 +64,8 @@ iniciaAlocador:
 	movq LIVRE, %rbx						# rbx = LIVRE
 	movq %rbx, 0(%rax)						# inicio_heap[0] = bloco seguinte esta LIVRE
 	movq Block_size, %rbx					# rbx = 4096
-	movq %rbx, 8(%rax)						# inicio_heap[1] = tam disponivel (4096)
+	subq $16, %rbx							# tamanho disponivel eh 4096 - tamanho IG
+	movq %rbx, 8(%rax)						# inicio_heap[1] = tam disponivel (4080)
 
 	movq inicio_heap, %rax					# inicia olhos para primeiro nó
 	movq %rax, olhos
@@ -107,9 +111,9 @@ alocaMem:
 		jne nao_cabe
 
 		movq %rdi, %rax					# rax = tamAloc
-		addq $16, %rax				 	# rax = tamAloc + 16
+		# addq $16, %rax				# tamanho ja eh guardado em IG corrigido
 		cmpq %rax, %rbx					# %rbx <= %rax
-		jle nao_cabe					# jump if tamanho nodo <= tamAloc + 16
+		jl nao_cabe					# jump if tamanho nodo < tamAloc + 16
 
 		# print auxiliar
 		# movq $1, %rax # 1 CABE
@@ -147,65 +151,146 @@ alocaMem:
 		ret								# retorna endereco do bloco usavel 
 
 	# if(!cabe)	
-nao_cabe: 
+	nao_cabe: 
 		# print auxiliar
-		movq $0, %rax # 0 NAO CABE
-
+		# movq $0, %rax # 0 NAO CABE
+		# ret
 		# if(proximo):					# 8(olhos) + tamAloc + 16 < final_heap
-		# 	proximo						# olhos = olhos + 8(olhos) + 8     // nn tenho ctz 
+		# 	proximo						# olhos = olhos + 8(olhos) + 16     
 		# 	jmp loop
 
+		# print auxiliar printf("nao cabe"); printf("circular eh %i", circular);
+		# movq $naocabestr, %rdi
+		# call printf
+
+		# movq circular, %rsi 	
+		# movq $circulastr, %rdi
+		# call printf
 
 
+		movq olhos, %r9
+		movq 8(%r9), %rax				# endereco do proximo no em rax
+		addq %r9, %rax					# rax = olhos + 8(olhos)
+		addq $16, %rax					# rax = olhos + tam_bloco + 16
 
-		jmp fim_alocaMem
+		cmpq final_heap, %rax			# se proximo >= heap, rax >= final_heap
+		jge nao_proximo
 
+		movq %rax, olhos				# olhos = proximo
+		jmp alocaMem					# procura denovo
 
-fim_alocaMem:
-	ret
+	nao_proximo:
+		# if(circular == 0):			# se bateu na heap e nao deu a volta, da a volta
+		# 	circular = 1
+		# 	olhos = inicio_heap
+		# 	jmp loop
+
+		movq circular, %rax
+		cmpq $1, %rax
+		je deu_volta				# if(circular == 1) jump deu_volta, se nao, continua
+
+		movq inicio_heap, %rax		# olhos = inicio_heap
+		movq %rax, olhos
+
+		movq $1, circular			# deu a volta
+
+		jmp alocaMem				# comeca a procurar denovo
+
+		# if(circular == 1):			# se bateu na heap e deu volta
+		# 	aumenta heap			# aumenta heap
+		# 	seta IG 				
+		# 	jmp loop				# procura dnv, se nn couber ainda, cai aki dnv
+# se nao cabe nodo, nao tem proximo e ja deu a volta
+# aloca mais espaco na heap
+	deu_volta:
+		movq Block_size, %rax		# tamanho a aumentar a heap
+		movq final_heap, %rbx		# rax novo final_heap 
+
+		addq %rax, %rbx				# rbx = final_heap += 4096
+
+		movq $12, %rax				# SO favor aumentar
+		movq %rbx, %rdi				# a heap para %rbx
+		syscall		
+		movq final_heap, %r11		# final_heap antigo	
+		movq %rax, final_heap		# atualiza valor final_heap			
+
+		# cria proximo IG SEM MEXER NOS OLHOS  r10 -> vai ser o proximo 'olho'
+		movq olhos, %r10				# r10 = endereco de olhos
+		addq $16, %r10					# r10 += 16
+		movq 16(%r10), %rbx			# rbx = tamanho do bloco
+		addq %rbx, %r10					# proximo olhos = olhos + tam bloco + 16(tam IG)
+
+		movq LIVRE, %rbx				# prox IG = (ender de olhos) + tam antigo bloco + 16 [tam IG[1] + prox byte dpois do tamAloc]
+		movq %rbx, 0(%r10)				# proximo IG[0] -> LIVRE
+		
+		movq Block_size, %rbx			# rbx = tamanho antigo bloco
+		subq $16, %rbx					# rbx -= tamanho novo bloco
+		movq %rbx, 8(%r10)				# proximo IG[1] = tam_bloco_old - tam_bloco_novo - 16 (tamanho IG)
+
+		# caso bloco livre atras, chama fusao
+		# call fusao
+
+		jmp alocaMem
+
 
 ocupado:
-	addq 8(%rbx), %rbx 		# proximo bloco de memoria
+	addq 8(%rbx), %rbx 			# proximo bloco de memoria
 	addq $16, %rbx
 	movq %rbx, %rcx
-	cmpq $LIVRE, (%rbx) 	# se o primeiro bloco estiver livre
+	cmpq $LIVRE, (%rbx) 		# se o primeiro bloco estiver livre
 	je varredura
-	cmpq $OCUPA, (%rbx) 	# se o bloco estiver ocupado
+	cmpq $OCUPA, (%rbx) 		# se o bloco estiver ocupado
 	je ocupado
 	ret
 
 soma_ful:
-	addq 8(%rcx), %rax
-
-varredura:
-	cmpq $LIVRE, (%rcx) 	# se livre
-	je soma_ful				# soma ao tamanho do bloco anterior
-	addq 8(%rcx), %rcx 		# proximo bloco de memoria
-	addq $16, %rcx
-	movq %rcx, %rbx
-	cmpq $LIVRE, (%rcx) 	# se livre
-	je varredura
-	cmpq $OCUPA, (%rcx) 	# se o bloco estiver ocupado
-	je ocupado
+	addq 8(%rbx), %rax
 	ret
 
-fusao:
-	movq $inicio_heap, %rax # inicio da heap vai pra %rax
-	movq %rax, %rbx 		# guarda o endereço
-	movq %rbx, %rcx
-	addq 8(%rcx), %rcx 		# proximo bloco de memoria
+varredura:
+	movq LIVRE, %r10
+	movq OCUPA, %r11
+	cmpq %r10, (%rcx) 			# se livre
+	je soma_ful					# soma ao tamanho do bloco anterior
+	
+	addq 8(%rcx), %rcx 			# proximo bloco de memoria
 	addq $16, %rcx
-	cmpq $LIVRE, (%rax) 	# se o primeiro bloco estiver livre
-	je varredura			# inicia a varredura
-	cmpq $OCUPA, (%rax) 	# se o bloco estiver ocupado
+	movq %rcx, %rbx
+	
+	cmpq %r10, (%rcx) 			# se livre
+	je varredura
+
+	cmpq %r11, (%rcx) 			# se o bloco estiver ocupado
+	je ocupado
+
+	ret
+
+# pseudo codigo aki pfr
+#
+#
+#
+fusao:
+	movq $inicio_heap, %rax 	# inicio da heap vai pra %rax
+	movq %rax, %rbx 			# guarda o endereço
+	movq %rbx, %rcx
+	
+	addq 8(%rcx), %rcx 			# proximo bloco de memoria
+	addq $16, %rcx
+
+	movq LIVRE, %r10
+	cmpq %r10, (%rax) 			# se o primeiro bloco estiver livre
+	je varredura				# inicia a varredura
+
+	movq OCUPA, %r10
+	cmpq %r10, (%rax) 			# se o bloco estiver ocupado
 	je ocupado
 	ret
 
 liberaMem:
-	movq LIVRE, %rax
-	movq %rax, -16(%rdi)
+	movq LIVRE, %rax			# recebe endereco 16 bytes a frente de IG
+	movq %rax, -16(%rdi)		# IG[0] = LIVRE
 	
-	call fusao
+	call fusao					
 
 	ret
 
