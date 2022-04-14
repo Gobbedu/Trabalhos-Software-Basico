@@ -16,6 +16,14 @@ char* status(double n){
 	else return "ERRO! != 0 ou 1";
 }
 
+void printIG(void *base, int deslc){
+	long *IG;
+	IG = (long *) (base + deslc);
+	printf("%p\n", base);
+	printf("init IG[0]: %s\n", status(IG[0]));
+	printf("init IG[1]: %ld\n\n", IG[1]);
+}
+
 int main(void){
 	int *aux;
 	long *IG;
@@ -23,43 +31,40 @@ int main(void){
 
 	iniciaAlocador();
 	printf("inicia alocador \n\n");
-
-	adr = getInit();
-	IG = (long *) adr;
-	printf("inicio heap is :%p\n", adr);
-	printf("init IG[0]: %s\n", status(IG[0]));
-	printf("init IG[1]: %ld\n\n", IG[1]);
+	printf("IG inicial:"); printIG(getInit(), 0);
 
 	banana = alocaMem(3);
-	printf("ender aloc is %p\n", adr);
-	IG = (long *) (banana - 16);
-	printf("IG[0]: %s\n", status(IG[0]));
-	printf("IG[1]: %ld\n\n", IG[1]);
+	void *ptr = alocaMem(5);
 
-	adr = banana + IG[1] ; 			// endereco proximo IG = adr + tam bloco + 16(tam IG)
-	IG = (long *) adr;
-	// for(int i = -16; i <= 16; i++){
-	printf("proximo IG is: %p\n", adr);
-	printf("prox IG[0]: %s \n", status(IG[0]));
-	printf("prox IG[1]: %ld \n\n", IG[1]);
-	// }
+	printf("banana is:");
+	printIG(banana, -16);
+
+	printf("segundo is:");
+	printIG(ptr, -16);
+
+	adr = banana + 3;	// endereco proximo IG = adr + tam bloco + 16(tam IG)
+	printf("proximo banana is:");
+	printIG(adr, 0);
+
+	adr = ptr + 5;
+	printf("proximo segundo is:");
+	printIG(adr, 0);
+
 
 	liberaMem(banana);
 	printf("LIBEROU ALLOC\n");
 
 	banana = getInit();
-	IG = (long *) banana;
-	printf("ender inicial is %p\n", banana);
-	printf("IG[0]: %s\n", status(IG[0]));
-	printf("IG[1]: %ld\n\n", IG[1]);
+	printf("ender inicial is:"); 
+	printIG(banana, 0);
 
-	adr = banana + IG[1] + 16 ; 			// endereco proximo IG = adr + tam bloco + 16(tam IG)
-	IG = (long *) adr ;
-	// for(int i = -16; i <= 16; i++){
-	printf("proximo IG is: %p\n", adr);
-	printf("prox IG[0]: %s \n", status(IG[0]));
-	printf("prox IG[1]: %ld \n\n", IG[1]);
-	// }
+	adr = banana + 3;  // endereco proximo IG = adr + tam bloco + 16(tam IG)
+	printf("banana is: ");
+	printIG(adr, 16);
+
+	adr += 21;
+	printf("ptr is: ");
+	printIG(adr, 16);
 
 	finalizaAlocador();
 	// printf("brk finaliza alocador\t %p\n", getBrk());

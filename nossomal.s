@@ -86,7 +86,7 @@ iniciaAlocador:
 # 		return endereco					# return 16(olhos) 1o byte acessivel
 # 	if(nao_cabe):						# else
 # 		if(proximo):					# 8(olhos) + tamAloc + 16 < final_heap
-# 			proximo						# olhos = olhos + 8(olhos) + 8     // nn tenho ctz 
+# 			proximo						# olhos = olhos + 8(olhos) + 16 // nn tenho ctz 
 #			jmp loop
 # 		if(nao_proximo):				# else
 # 			if(circular == 0):			# se bateu na heap e nao deu a volta, da a volta
