@@ -267,10 +267,10 @@ varredura:
 	addq $16, %rcx
 	movq %rcx, %rbx
 	
-	cmpq %r10, -8(%rcx) 		# se livre
+	cmpq %r10, -16(%rcx) 		# se livre
 	je varredura
 
-	cmpq %r11, -8(%rcx) 		# se o bloco estiver ocupado
+	cmpq %r11, -16(%rcx) 		# se o bloco estiver ocupado
 	je ocupado
 
 	ret
