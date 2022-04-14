@@ -36,7 +36,7 @@ NAME = a.out
 
 # codigo
 ASS = nossomal.s
-OBJ = nossomal.o 
+OBJ = nossomal.o
 
 # REGRAS DE COMPILACAO
 all: main
