@@ -39,6 +39,9 @@ void testeFusao(void)
 	printf("p2 is: ");
 	printIG(p2, -16);
 
+	printf("proximo de p2 is:");
+	printIG(p2, 2);
+
 	liberaMem(p1);
 	liberaMem(p2);
 
