@@ -1,31 +1,75 @@
 #include <stdio.h>
 
+// funcoes auxiliares para teste
 extern void iniciaAlocador();
 extern void* finalizaAlocador();
-extern void* nossomal();
 extern void* alocaMem();
 extern void liberaMem();
 
 // funcoes auxiliares
 extern void* getBrk();
 extern void* getInit();
+void printIG(void *base, int deslc);
+char* status(double n);
 
-char* status(double n){
-	if( n == 0) return "LIVRE 0";
-	if( n == 1) return "OCUPADO 1";
-	else return "ERRO! != 0 ou 1";
-}
-
-void printIG(void *base, int deslc){
-	long *IG;
-	IG = (long *) (base + deslc);
-	printf("%p\n", base);
-	printf("init IG[0]: %s\n", status(IG[0]));
-	printf("init IG[1]: %ld\n\n", IG[1]);
-}
+void teste1(void);
+void teste2(void);
+void teste3(void);
+void testeFusao(void);
 
 int main(void){
-	int *aux;
+
+	testeFusao();
+
+	return 0;
+}
+
+void testeFusao(void)
+{
+	void *p1, *p2, *ini;
+	iniciaAlocador();
+
+	ini = getInit();
+
+	p1 = alocaMem(1);
+	printf("p1 is: ");
+	printIG(p1, -16);
+
+	p2 = alocaMem(2);
+	printf("p2 is: ");
+	printIG(p2, -16);
+
+	liberaMem(p1);
+	liberaMem(p2);
+
+	printf("libera p1 & p2, inicio is:");
+	printIG(ini, 0);
+
+	finalizaAlocador();
+}
+
+void teste2(void)
+{
+	void *pont1, *pont2, *pont3;
+	iniciaAlocador();
+
+	pont1 = alocaMem(2024);
+	if (pont1)
+		printf("pont1 is :%p\n", pont1);
+
+	pont2 = alocaMem(2041);
+	if( pont2 ) 
+		printf("pont2 is :%p\n", pont2);
+
+
+	finalizaAlocador();
+}
+
+// aloca banana(3) e ptr(5), depois libera banana, 
+// testa empilhamento da heap
+void teste1(void)
+{
+    int *aux;
 	long *IG;
 	void *adr, *banana, *d, *c;
 
@@ -69,5 +113,21 @@ int main(void){
 	finalizaAlocador();
 	// printf("brk finaliza alocador\t %p\n", getBrk());
 
-	return 0;
 }
+
+char* status(double n)
+{
+	if( n == 0) return "LIVRE 0";
+	if( n == 1) return "OCUPADO 1";
+	else return "ERRO! != 0 ou 1";
+}
+
+void printIG(void *base, int deslc)
+{
+	long *IG;
+	IG = (long *) (base + deslc);
+	printf("%p\n", base);
+	printf("init IG[0]: %s\n", status(IG[0]));
+	printf("init IG[1]: %ld\n\n", IG[1]);
+}
+
