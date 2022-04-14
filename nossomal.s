@@ -236,33 +236,41 @@ alocaMem:
 ocupado:
 	movq LIVRE, %r10
 	movq OCUPA, %r11
-	addq $-8, %rbx				# IG[1]
-	addq (%rbx), %rax			# mudando a cabeça de verificação
-	movq %rbx, %rcx				# atualizando registradores aux
-	cmpq %r10, -8(%rcx) 		# se o bloco estiver livre
+	addq 8(%rbx), %rax			# mudando a cabeça de verificação
+	addq $16, %rax				#
+	movq %rax, %rbx				#
+	movq %rax, %rcx				# atualizando registradores aux
+	cmpq %r10, -16(%rcx) 		# se o bloco estiver livre
 	je varredura				# inicia verificação a partir dele
-	cmpq %r11, -8(%rcx) 		# se o bloco estiver ocupado
+	cmpq %r11, -16(%rcx) 		# se o bloco estiver ocupado
 	je ocupado					# muda a cabeça de verificação
 	ret
 
 soma_ful:
-	movq -8(%rax), %rax
-	addq -8(%rbx), %rax			# IG[1] += tamanho do bloco que esta livre a frente
+	addq $-8, %rax
+	movq (%rax), %r12
+	addq 8(%rbx), %r12			# IG[1] += tamanho do bloco que esta livre a frente
+	addq $8, %rax
 	ret
 
 varredura:
+	movq final_heap, %r12		#
+	cmpq %r12, %rcx				# verifica se esta no fim da heap alocada
+	jge fim						#
+
 	movq LIVRE, %r10
 	movq OCUPA, %r11
-	cmpq %r10, -8(%rcx) 		# se o proximo bloco estiver livre
+	cmpq %r10, (%rbx) 			# se o proximo bloco estiver livre
 	je soma_ful					# soma ao tamanho do bloco anterior
 	
-	addq -8(%rcx), %rcx 		# proximo bloco de memoria
+	addq 8(%rbx), %rcx 			# proximo bloco de memoria
+	addq $16, %rcx
 	movq %rcx, %rbx
 	
-	cmpq %r10, (%rcx) 			# se livre
+	cmpq %r10, -8(%rcx) 		# se livre
 	je varredura
 
-	cmpq %r11, (%rcx) 			# se o bloco estiver ocupado
+	cmpq %r11, -8(%rcx) 		# se o bloco estiver ocupado
 	je ocupado
 
 	ret
@@ -273,11 +281,12 @@ varredura:
 #
 fusao:
 	movq $inicio_heap, %rax 	# inicio da heap vai pra %rax
-	movq %rax, %rbx 			# guarda o endereço
-	movq %rbx, %rcx
+	movq $inicio_heap, %rbx
+	movq $inicio_heap, %rcx
 	
 	addq $-8, %rcx
-	addq (%rcx), %rcx 			# proximo bloco de memoria
+	addq (%rcx), %rbx 			# proximo bloco de memoria
+	addq $8, %rcx
 
 	movq LIVRE, %r10
 	cmpq %r10, -16(%rax) 		# se o primeiro bloco estiver livre
@@ -305,3 +314,5 @@ finalizaAlocador:
 	
 	ret
 
+fim:
+	ret
