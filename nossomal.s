@@ -234,27 +234,29 @@ alocaMem:
 
 
 ocupado:
-	addq 8(%rbx), %rbx 			# proximo bloco de memoria
-	addq $16, %rbx
-	movq %rbx, %rcx
-	cmpq $LIVRE, (%rbx) 		# se o primeiro bloco estiver livre
-	je varredura
-	cmpq $OCUPA, (%rbx) 		# se o bloco estiver ocupado
-	je ocupado
+	movq LIVRE, %r10
+	movq OCUPA, %r11
+	addq $-8, %rbx				# IG[1]
+	addq (%rbx), %rax			# mudando a cabeça de verificação
+	movq %rbx, %rcx				# atualizando registradores aux
+	cmpq %r10, -8(%rcx) 		# se o bloco estiver livre
+	je varredura				# inicia verificação a partir dele
+	cmpq %r11, -8(%rcx) 		# se o bloco estiver ocupado
+	je ocupado					# muda a cabeça de verificação
 	ret
 
 soma_ful:
-	addq 8(%rbx), %rax
+	movq -8(%rax), %rax
+	addq -8(%rbx), %rax			# IG[1] += tamanho do bloco que esta livre a frente
 	ret
 
 varredura:
 	movq LIVRE, %r10
 	movq OCUPA, %r11
-	cmpq %r10, (%rcx) 			# se livre
+	cmpq %r10, -8(%rcx) 		# se o proximo bloco estiver livre
 	je soma_ful					# soma ao tamanho do bloco anterior
 	
-	addq 8(%rcx), %rcx 			# proximo bloco de memoria
-	addq $16, %rcx
+	addq -8(%rcx), %rcx 		# proximo bloco de memoria
 	movq %rcx, %rbx
 	
 	cmpq %r10, (%rcx) 			# se livre
@@ -274,15 +276,15 @@ fusao:
 	movq %rax, %rbx 			# guarda o endereço
 	movq %rbx, %rcx
 	
-	addq 8(%rcx), %rcx 			# proximo bloco de memoria
-	addq $16, %rcx
+	addq $-8, %rcx
+	addq (%rcx), %rcx 			# proximo bloco de memoria
 
 	movq LIVRE, %r10
-	cmpq %r10, (%rax) 			# se o primeiro bloco estiver livre
+	cmpq %r10, -16(%rax) 		# se o primeiro bloco estiver livre
 	je varredura				# inicia a varredura
 
 	movq OCUPA, %r10
-	cmpq %r10, (%rax) 			# se o bloco estiver ocupado
+	cmpq %r10, -16(%rax) 		# se o bloco estiver ocupado
 	je ocupado
 	ret
 
