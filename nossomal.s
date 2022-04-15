@@ -288,6 +288,8 @@ varredura:
 #		 {
 #			 8(%rcx) += 8(%rbx)
 #			 8(%rcx) += 16
+#			 8(%rbx) += 8(%rbx)
+#			 8(%rbx) += 16
 #		 }
 #		 else
 #		 {
