@@ -273,13 +273,7 @@ varredura:
 	cmpq %r11, 0(%rbx) 			# se o bloco estiver ocupado
 	je ocupado
 
-	movq $12, %rax				#
-	movq $0, %rdi				#
-	syscall						# verifica se esta no fim da heap alocada
-	cmpq %rax, %rbx				# 
-	jge fim						# ACHO QUE AQUI ESTA O ERRO
-								# PRECISO DAR UM RETURN linha 250 tbm
-	
+	ret
 # pseudo codigo aki pfr
 # %rcx = inicio heap
 # %rbx = inicio heap
