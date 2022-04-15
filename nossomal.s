@@ -1,7 +1,7 @@
 .section .data
 	inicio_heap: 	.quad 0			# valor inicial da heap, antes do iniciaAlocador
 	final_heap:		.quad 0			# valor final da heap, em qualquer dado momento
-	block_size:		.quad 4096		# tamanho dos blocos alocados, quando heap cheia
+	Block_size:		.quad 4096		# tamanho dos blocos alocados, quando heap cheia
 	LIVRE: 			.quad 0			# bool que representa um bloco LIVRE
 	OCUPA:			.quad 1			# bool que representa um bloco OCUPADO
 	
@@ -9,13 +9,14 @@
 	circular:		.quad 0			# se olhos ja circularam na heap, $1, else $0, usamos pra
 									# decidir se é preciso aumentar a heap ou nao
 
-	strinit:		.string " "
-	strnodo:		.string "( %i | %i ).."
-	strfinal:		.string "final Heap\n"
+	strinit:		.string "inicia printf\n"
+	straux: 		.string "brk[0 e 1]: %i %i\n"
+	naocabestr:		.string "nao cabe\n"
+	circulastr:		.string "circular eh : %i\n"
 
 .section .text
 
-.globl iniciaAlocador, finalizaAlocador, alocaMem, liberaMem, getBrk, getInit, getFim, imprimeMapa
+.globl iniciaAlocador, finalizaAlocador, alocaMem, liberaMem, getBrk, getInit, 
 # nao_cabe, nao_proximo, deu_volta,
 
 
@@ -28,9 +29,6 @@ getBrk:
 
 getInit:
 	movq inicio_heap, %rax;
-	ret
-getFim:
-	movq final_heap, %rax
 	ret
 
 iniciaAlocador:
@@ -47,17 +45,16 @@ iniciaAlocador:
 	syscall 								# brk vem no %rax
 	movq %rax, inicio_heap					# inicio_heap = endereco de brk
 
-	# aumenta heap em block_size bytes + IG
+	# aumenta heap em Block_size bytes + IG
 	movq inicio_heap, %rbx					# rbx = brk
-	movq block_size, %r10					# r10 = block_size
+	movq Block_size, %r10					# r10 = Block_size
 	addq $16, %r10							# r10 += sizeof(IG)
-	addq %r10, %rbx 						# rbx = inicio_heap + block_size + 16
+	addq %r10, %rbx 						# rbx = inicio_heap + Block_size + 16
 
-	# empurra brk pra baixo => brk = brk + block_size
+	# empurra brk pra baixo => brk = brk + Block_size
 	movq $12, %rax
 	movq %rbx, %rdi
 	syscall
-	movq %rax, final_heap
 
 	# registra INFORMACOES GERENCIAIS (IG)
 	# inicio_heap = Livre/Ocupado
@@ -66,12 +63,18 @@ iniciaAlocador:
 	movq inicio_heap, %rax					# rax = inicio_heap
 	movq LIVRE, %rbx						# rbx = LIVRE
 	movq %rbx, 0(%rax)						# inicio_heap[0] = bloco seguinte esta LIVRE
-	movq block_size, %rbx					# rbx = 4096
+	movq Block_size, %rbx					# rbx = 4096
 	subq $16, %rbx							# tamanho disponivel eh 4096 - tamanho IG
 	movq %rbx, 8(%rax)						# inicio_heap[1] = tam disponivel (4080)
 
 	movq inicio_heap, %rax					# inicia olhos para primeiro nó
 	movq %rax, olhos
+
+	# imprime conteudo da IG
+	# movq (%rax), %rsi 	
+	# movq 8(%rax), %rdx
+	# movq $straux, %rdi
+	# call printf
 
 	ret
 
@@ -156,6 +159,15 @@ alocaMem:
 		# 	proximo						# olhos = olhos + 8(olhos) + 16     
 		# 	jmp loop
 
+		# print auxiliar printf("nao cabe"); printf("circular eh %i", circular);
+		# movq $naocabestr, %rdi
+		# call printf
+
+		# movq circular, %rsi 	
+		# movq $circulastr, %rdi
+		# call printf
+
+
 		movq olhos, %r9
 		movq 8(%r9), %rax				# endereco do proximo no em rax
 		addq %r9, %rax					# rax = olhos + 8(olhos)
@@ -191,7 +203,7 @@ alocaMem:
 # se nao cabe nodo, nao tem proximo e ja deu a volta
 # aloca mais espaco na heap
 	deu_volta:
-		movq block_size, %rax		# tamanho a aumentar a heap
+		movq Block_size, %rax		# tamanho a aumentar a heap
 		movq final_heap, %rbx		# rax novo final_heap 
 
 		addq %rax, %rbx				# rbx = final_heap += 4096
@@ -211,7 +223,7 @@ alocaMem:
 		movq LIVRE, %rbx				# prox IG = (ender de olhos) + tam antigo bloco + 16 [tam IG[1] + prox byte dpois do tamAloc]
 		movq %rbx, 0(%r10)				# proximo IG[0] -> LIVRE
 		
-		movq block_size, %rbx			# rbx = tamanho antigo bloco
+		movq Block_size, %rbx			# rbx = tamanho antigo bloco
 		subq $16, %rbx					# rbx -= tamanho novo bloco
 		movq %rbx, 8(%r10)				# proximo IG[1] = tam_bloco_old - tam_bloco_novo - 16 (tamanho IG)
 
@@ -221,91 +233,14 @@ alocaMem:
 		jmp alocaMem
 
 
-##### o fusao q eu tentei fazer kkkkkkkkkk :(
-# # for(a = inicio_heap; a + 16 < final_heap; prox(a))
-# # {
-# # 	if(a[1] == livre)
-# # 	{
-# # 		for(b = prox(a); b + 16 < final_heap; prox(b)
-# # 		{
-# # 			if(b[1] != livre)
-# # 			{
-# # 				a = b;
-# # 				break;
-# # 			}
-# # 			a[1] += b[1];
-# # 		}
-# # 	}
-# # }
-# fusao:
-# 	movq inicio_heap, %r10
-# 	movq %r10, %r11						# b = a
-	
-# 	# itera sobre olho1 (%r10)
-# 	loop1fusao:
-# 		#se livre vai pro loop 2
-# 		movq LIVRE, %rax
-# 		movq 0(%r10), %rbx
-# 		cmpq %rax, %rbx
-# 		je loop2fusao
-
-# 		# senao
-# 		# proximo(a)
-# 		movq 8(%r10), %rax				# endereco do proximo no em rax
-# 		addq %rax, %r10					
-# 		addq $16, %r10	
-# 		movq %r10, %r11					# b = a
-
-# 		movq final_heap, %rbx
-# 		subq $16, %rbx
-# 		cmpq %rbx, %r10					# se a + 16 < heap
-# 		jl loop1fusao
-
-# 		ret								# caso contrario, termina fusao
-
-# 	# itera sobre olho2 (%r11)
-# 	loop2fusao:
-# 		#se b bateu na heap, volta loop 1
-# 		movq final_heap, %rbx
-# 		subq $16, %rbx
-# 		cmpq %rbx, %r11				
-# 		jl loop1fusao
-
-# 		# proximo(b)
-# 		movq 8(%r11), %rax				
-# 		addq %rax, %r11
-# 		addq $16, %r11
-
-# 		# se b OCUPADO
-# 		movq OCUPA, %rax
-# 		movq 0(%r11), %rbx
-# 		cmpq %rax, %rbx
-# 		je loop1fusao
-
-# 		# se b livre
-# 		#a[1] += b[1]
-# 		movq 8(%r11), %rax
-# 		movq 8(%r10), %rbx
-# 		addq %rbx, %rax
-
-# 		movq %rax, 8(%r10)
-# 		jmp loop2fusao
-
 ocupado:
 	movq LIVRE, %r10
 	movq OCUPA, %r11
 	
-	addq 8(%rbx), %rcx			# mudando a cabeça de verificação
+	addq 8(%rcx), %rcx			# mudando a cabeça de verificação
 	addq $16, %rcx				#
-	movq %rcx, %rbx				# atualizando registradores aux
 	addq 8(%rbx), %rbx 			# %rbx += IG[1] -> prox bloco
 	addq $16, %rbx				# %rbx += 16 -> (IG anterior)
-
-	movq $12, %rax				#
-	movq $0, %rdi				#
-	syscall						# verifica se esta no fim da heap alocada
-	cmpq %rax, %rbx				# 
-	jge fim						#
 	
 	cmpq %r10, 0(%rcx) 			# se o bloco estiver livre
 	je varredura				# inicia verificação a partir dele
@@ -332,6 +267,12 @@ varredura:
 	addq 8(%rbx), %rbx 			# proximo bloco de memoria
 	addq $16, %rbx
 
+	cmpq %r10, 0(%rbx) 			# se livre
+	je varredura
+
+	cmpq %r11, 0(%rbx) 			# se o bloco estiver ocupado
+	je ocupado
+
 	movq $12, %rax				#
 	movq $0, %rdi				#
 	syscall						# verifica se esta no fim da heap alocada
@@ -339,12 +280,6 @@ varredura:
 	jge fim						# ACHO QUE AQUI ESTA O ERRO
 								# PRECISO DAR UM RETURN linha 250 tbm
 	
-	cmpq %r10, 0(%rbx) 			# se livre
-	je varredura
-
-	cmpq %r11, 0(%rbx) 			# se o bloco estiver ocupado
-	je ocupado
-
 # pseudo codigo aki pfr
 # %rcx = inicio heap
 # %rbx = inicio heap
@@ -414,29 +349,3 @@ finalizaAlocador:
 
 fim:
 	ret
-
-
-imprimeMapa:
-	movq inicio_heap, %r10
-
-	loopMapa:
-		#print(nodo)
-		movq 0(%r10), %rsi
-		movq 8(%r10), %rdx
-		movq $strnodo, %rdi
-		call printf
-
-		# proximo nodo
-		movq 8(%r10), %rax				# endereco do proximo no em rax
-		addq %rax, %r10					# nodo = olhos + 8(olhos)
-		addq $16, %r10					# nodo = olhos + tam_bloco + 16
-
-		movq final_heap, %rax
-		subq $16, %rax
-		cmpq %rax, %r10					# if olho + 16 < final_heap, imprime proximo 
-		jl loopMapa
-
-		movq $strfinal, %rdi
-		call printf
-
-		ret
