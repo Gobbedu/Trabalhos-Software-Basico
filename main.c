@@ -5,12 +5,16 @@ extern void iniciaAlocador();
 extern void* finalizaAlocador();
 extern void* alocaMem();
 extern void liberaMem();
+// extern void imprimeMapa(); // a verdadeira ta dando ruim
 
 // funcoes auxiliares
 extern void* getBrk();
 extern void* getInit();
+extern void* getFim();
 void printIG(void *base, int deslc);
 char* status(double n);
+
+void imprimeMapa();
 
 void teste1(void);
 void teste2(void);
@@ -28,25 +32,25 @@ void testeFusao(void)
 {
 	void *p1, *p2, *ini;
 	iniciaAlocador();
+	printf("\ninicia alocador:\n");
+	imprimeMapa(); printf("\n");
 
-	ini = getInit();
-
+	printf("aloca p1:\n");
 	p1 = alocaMem(1);
-	printf("p1 is: ");
-	printIG(p1, -16);
+	imprimeMapa(); printf("\n");
 
-	p2 = alocaMem(2);
-	printf("p2 is: ");
-	printIG(p2, -16);
-
-	printf("proximo de p2 is:");
-	printIG(p2, 2);
-
+	printf("libera p1:\n");
 	liberaMem(p1);
-	liberaMem(p2);
+	imprimeMapa(); printf("\n");
 
-	printf("libera p1 & p2, inicio is:");
-	printIG(ini, 0);
+	// // printf("aloca p2:\n");
+	// // p2 = alocaMem(2);
+	// // imprimeMapa(); printf("\n");
+
+	// // printf("libera p2:\n");
+	// // liberaMem(p2);
+	// // imprimeMapa(); printf("\n");
+
 
 	finalizaAlocador();
 }
@@ -123,6 +127,28 @@ char* status(double n)
 	if( n == 0) return "LIVRE 0";
 	if( n == 1) return "OCUPADO 1";
 	else return "ERRO! != 0 ou 1";
+}
+
+void imprimeMapa(void)
+{
+	void *final, *inicio, *olhos;
+	long *olho;
+	char state;
+	final = getFim();
+	inicio = getInit();
+
+	olhos = inicio;
+
+	while(olhos  + 16 < final)
+	{
+		olho = (long *)olhos;
+		state = (olho[0] == 0) ? 'L' : 'X';
+		printf("( %c | %li )..", state, olho[1]);
+
+		olhos += olho[1] + 16;
+	}
+	printf("final heap\n");
+
 }
 
 void printIG(void *base, int deslc)
