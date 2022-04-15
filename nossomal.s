@@ -245,7 +245,6 @@ ocupado:
 	je varredura				# inicia verificação a partir dele
 	cmpq %r11, (%rcx) 			# se o bloco estiver ocupado
 	je ocupado					# muda a cabeça de verificação
-	ret
 
 soma_ful:
 	movq 8(%rbx), %r12
@@ -276,12 +275,38 @@ varredura:
 	cmpq %r11, (%rbx) 			# se o bloco estiver ocupado
 	je ocupado
 
-	ret
-
 # pseudo codigo aki pfr
-#
-#
-#
+# %rcx = inicio heap
+# %rbx = inicio heap
+# %rbx += IG[1]
+# %rbx += 16
+# while(%rbx < brk)
+# {
+#     if((%rcx) == LIVRE)
+#	  {
+#		 if((%rbx) == LIVRE)
+#		 {
+#			 8(%rcx) += 8(%rbx)
+#			 8(%rcx) += 16
+#		 }
+#		 else
+#		 {
+#			 %rcx += 8(%rbx)
+#			 %rcx += 16
+#			 %rbx = %rcx
+#			 8(%rbx) += 8(%rbx)
+#			 8(%rbx) += 16
+#		 }
+# 	  }
+#	  else
+#	  {
+#		 %rcx += 8(%rbx)
+#		 %rcx += 16
+#		 %rbx = %rcx
+#		 8(%rbx) += 8(%rbx)
+#		 8(%rbx) += 16
+#	  }
+# } 
 fusao:
 	movq $inicio_heap, %rcx 	# inicio da heap vai pra %rax
 	movq $inicio_heap, %rbx
