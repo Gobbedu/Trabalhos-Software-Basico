@@ -196,7 +196,7 @@ alocaMem:
 
 		jmp alocaMem				# comeca a procurar denovo
 
-		# if(circular == 1):			# se bateu na heap e deu volta
+		# if(circular == 1):		# se bateu na heap e deu volta
 		# 	aumenta heap			# aumenta heap
 		# 	seta IG 				
 		# 	jmp loop				# procura dnv, se nn couber ainda, cai aki dnv
@@ -238,39 +238,40 @@ ocupado:
 	movq OCUPA, %r11
 	addq 8(%rbx), %rax			# mudando a cabeça de verificação
 	addq $16, %rax				#
-	movq %rax, %rbx				#
-	movq %rax, %rcx				# atualizando registradores aux
-	cmpq %r10, -16(%rcx) 		# se o bloco estiver livre
+	movq %rax, %rbx				# atualizando registradores aux
+	addq 8(%rbx), %rbx 			# %rbx += IG[1] -> prox bloco
+	addq $16, %rbx				# %rbx += 16 -> (IG anterior)
+	cmpq %r10, (%rax) 			# se o bloco estiver livre
 	je varredura				# inicia verificação a partir dele
-	cmpq %r11, -16(%rcx) 		# se o bloco estiver ocupado
+	cmpq %r11, (%rax) 			# se o bloco estiver ocupado
 	je ocupado					# muda a cabeça de verificação
 	ret
 
 soma_ful:
-	addq $-8, %rax
-	movq (%rax), %r12
-	addq 8(%rbx), %r12			# IG[1] += tamanho do bloco que esta livre a frente
-	addq $8, %rax
+	movq 8(%rbx), %r12
+	addq %r12, 8(%rax)			# IG[1] += tamanho do bloco que esta livre a frente
+	addq $16, 8(%rax)
 	ret
 
 varredura:
-	movq final_heap, %r12		#
-	cmpq %r12, %rcx				# verifica se esta no fim da heap alocada
-	jge fim						#
-
 	movq LIVRE, %r10
 	movq OCUPA, %r11
 	cmpq %r10, (%rbx) 			# se o proximo bloco estiver livre
 	je soma_ful					# soma ao tamanho do bloco anterior
+	cmpq %r11, (%rbx) 			# se o bloco estiver ocupado
+	je ocupado
+
+	addq 8(%rbx), %rbx 			# proximo bloco de memoria
+	addq $16, %rbx
+
+	movq final_heap, %r12		#
+	cmpq %r12, %rbx				# verifica se esta no fim da heap alocada
+	jge fim						#
 	
-	addq 8(%rbx), %rcx 			# proximo bloco de memoria
-	addq $16, %rcx
-	movq %rcx, %rbx
-	
-	cmpq %r10, -16(%rcx) 		# se livre
+	cmpq %r10, (%rbx) 			# se livre
 	je varredura
 
-	cmpq %r11, -16(%rcx) 		# se o bloco estiver ocupado
+	cmpq %r11, (%rbx) 			# se o bloco estiver ocupado
 	je ocupado
 
 	ret
@@ -282,19 +283,17 @@ varredura:
 fusao:
 	movq $inicio_heap, %rax 	# inicio da heap vai pra %rax
 	movq $inicio_heap, %rbx
-	movq $inicio_heap, %rcx
 	
-	addq $-8, %rcx
-	addq (%rcx), %rbx 			# proximo bloco de memoria
-	addq $8, %rcx
+	addq 8(%rbx), %rbx 			# %rbx += IG[1] -> prox bloco
+	addq $16, %rbx				# %rbx += 16 -> (IG anterior)
 
 	movq LIVRE, %r10
-	cmpq %r10, -16(%rax) 		# se o primeiro bloco estiver livre
+	cmpq %r10, (%rax) 			# se o primeiro bloco estiver livre
 	je varredura				# inicia a varredura
 
 	movq OCUPA, %r10
-	cmpq %r10, -16(%rax) 		# se o bloco estiver ocupado
-	je ocupado
+	cmpq %r10, (%rax) 			# se o bloco estiver ocupado
+	je ocupado					# va para o prox bloco
 	ret
 
 liberaMem:
