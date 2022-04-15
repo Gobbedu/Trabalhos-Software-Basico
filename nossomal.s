@@ -15,7 +15,7 @@
 
 .section .text
 
-.globl iniciaAlocador, finalizaAlocador, alocaMem, liberaMem, getBrk, getInit, getFim
+.globl iniciaAlocador, finalizaAlocador, alocaMem, liberaMem, getBrk, getInit, getFim, imprimeMapa
 # nao_cabe, nao_proximo, deu_volta,
 
 
@@ -414,3 +414,29 @@ finalizaAlocador:
 
 fim:
 	ret
+
+
+imprimeMapa:
+	movq inicio_heap, %r10
+
+	loopMapa:
+		#print(nodo)
+		movq 0(%r10), %rsi
+		movq 8(%r10), %rdx
+		movq $strnodo, %rdi
+		call printf
+
+		# proximo nodo
+		movq 8(%r10), %rax				# endereco do proximo no em rax
+		addq %rax, %r10					# nodo = olhos + 8(olhos)
+		addq $16, %r10					# nodo = olhos + tam_bloco + 16
+
+		movq final_heap, %rax
+		subq $16, %rax
+		cmpq %rax, %r10					# if olho + 16 < final_heap, imprime proximo 
+		jl loopMapa
+
+		movq $strfinal, %rdi
+		call printf
+
+		ret

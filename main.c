@@ -5,7 +5,7 @@ extern void iniciaAlocador();
 extern void* finalizaAlocador();
 extern void* alocaMem();
 extern void liberaMem();
-// extern void imprimeMapa(); // a verdadeira ta dando ruim
+extern void imprimeMapa(); // a verdadeira ta dando ruim
 
 // funcoes auxiliares
 extern void* getBrk();
@@ -14,7 +14,7 @@ extern void* getFim();
 void printIG(void *base, int deslc);
 char* status(double n);
 
-void imprimeMapa();
+void cimprimeMapa(void);
 
 void teste1(void);
 void teste2(void);
@@ -33,23 +33,23 @@ void testeFusao(void)
 	void *p1, *p2, *ini;
 	iniciaAlocador();
 	printf("\ninicia alocador:\n");
-	imprimeMapa(); printf("\n");
+	cimprimeMapa(); printf("\n");
 
 	printf("aloca p1:\n");
 	p1 = alocaMem(1);
-	imprimeMapa(); printf("\n");
+	cimprimeMapa(); printf("\n");
+
+	printf("aloca p2:\n");
+	p2 = alocaMem(2);
+	cimprimeMapa(); printf("\n");
 
 	printf("libera p1:\n");
 	liberaMem(p1);
-	imprimeMapa(); printf("\n");
+	cimprimeMapa(); printf("\n");
 
-	// // printf("aloca p2:\n");
-	// // p2 = alocaMem(2);
-	// // imprimeMapa(); printf("\n");
-
-	// // printf("libera p2:\n");
-	// // liberaMem(p2);
-	// // imprimeMapa(); printf("\n");
+	printf("libera p2:\n");
+	liberaMem(p2);
+	cimprimeMapa(); printf("\n");
 
 
 	finalizaAlocador();
@@ -129,7 +129,7 @@ char* status(double n)
 	else return "ERRO! != 0 ou 1";
 }
 
-void imprimeMapa(void)
+void cimprimeMapa(void)
 {
 	void *final, *inicio, *olhos;
 	long *olho;
