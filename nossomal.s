@@ -288,16 +288,16 @@ varredura:
 #		 {
 #			 8(%rcx) += 8(%rbx)
 #			 8(%rcx) += 16
-#			 8(%rbx) += 8(%rbx)
-#			 8(%rbx) += 16
+#			 %rbx += 8(%rbx)
+#			 %rbx += 16
 #		 }
 #		 else
 #		 {
 #			 %rcx += 8(%rbx)
 #			 %rcx += 16
 #			 %rbx = %rcx
-#			 8(%rbx) += 8(%rbx)
-#			 8(%rbx) += 16
+#			 %rbx += 8(%rbx)
+#			 %rbx += 16
 #		 }
 # 	  }
 #	  else
@@ -305,8 +305,8 @@ varredura:
 #		 %rcx += 8(%rbx)
 #		 %rcx += 16
 #		 %rbx = %rcx
-#		 8(%rbx) += 8(%rbx)
-#		 8(%rbx) += 16
+#		 %rbx += 8(%rbx)
+#		 %rbx += 16
 #	  }
 # } 
 fusao:
