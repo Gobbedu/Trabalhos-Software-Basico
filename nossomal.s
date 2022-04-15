@@ -241,12 +241,17 @@ ocupado:
 	movq %rcx, %rbx				# atualizando registradores aux
 	addq 8(%rbx), %rbx 			# %rbx += IG[1] -> prox bloco
 	addq $16, %rbx				# %rbx += 16 -> (IG anterior)
+	movq $12, %rax				#
+	movq $0, %rdi				#
+	syscall						# verifica se esta no fim da heap alocada
+	cmpq %rax, %rbx				# 
+	jge fim						#
 	cmpq %r10, (%rcx) 			# se o bloco estiver livre
 	je varredura				# inicia verificação a partir dele
 	cmpq %r11, (%rcx) 			# se o bloco estiver ocupado
 	je ocupado					# muda a cabeça de verificação
 
-soma_ful:
+soma:
 	movq 8(%rbx), %r12
 	addq %r12, 8(%rcx)			# IG[1] += tamanho do bloco que esta livre a frente
 	addq $16, 8(%rcx)
@@ -256,7 +261,7 @@ varredura:
 	movq LIVRE, %r10
 	movq OCUPA, %r11
 	cmpq %r10, (%rbx) 			# se o proximo bloco estiver livre
-	je soma_ful					# soma ao tamanho do bloco anterior
+	je soma						# soma ao tamanho do bloco anterior
 	cmpq %r11, (%rbx) 			# se o bloco estiver ocupado
 	je ocupado
 
