@@ -279,7 +279,7 @@ varredura:
 	syscall						# verifica se esta no fim da heap alocada
 	cmpq %rax, %rbx				# 
 	jge fim						# ACHO QUE AQUI ESTA O ERRO
-								# PRECISO DAR UM RETURN 
+								# PRECISO DAR UM RETURN linha 250 tbm
 	
 	cmpq %r10, 0(%rbx) 			# se livre
 	je varredura
