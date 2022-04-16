@@ -289,7 +289,7 @@ soma:
 	addq %rax, 8(%r12)			# IG[1] += tamanho do bloco que esta livre a frente
 	addq $16, 8(%r12)			# %rcx += 16 -> (IG)
 
-	addq 8(%r13), %rax 			# avanca rbx	
+	movq 8(%r13), %rax 			# avanca rbx	
 	addq %rax, %r13				# %rbx += IG[1] -> prox bloco
 	addq $16, %r13				# %rbx += 16 -> (IG anterior)
 	
