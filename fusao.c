@@ -11,7 +11,7 @@ int main(int argc, char const *argv[])
     // call fusao
     goto fusao;
 
-    fusao:
+fusao:
     a = 0;
     percorre:
     while( a < Len)
@@ -25,21 +25,22 @@ int main(int argc, char const *argv[])
         printf("a livre %i\n", a);
         goto varre;
     }
+    // ret
 
-    varre:
-        b = a + 1;
-        while( b < Len )
+varre:
+    b = a + 1;
+    while( b < Len )
+    {
+        if(Heap[b] == OCUPA)
         {
-            if(Heap[b] == OCUPA)
-            {
-                a = b;
-                goto percorre;
-            }
-            printf("livres a%i b%i \n", a, b);
-            Heap[a] += Heap[b];
-
-            b = b + 1;
+            a = b;
+            goto percorre;
         }
+        printf("livres a%i b%i \n", a, b);
+        Heap[a] = Heap[a] + Heap[b] + 16;
+
+        b = b + 1;
+    }
 
 
     for(int i =0; i < Len; i++)
