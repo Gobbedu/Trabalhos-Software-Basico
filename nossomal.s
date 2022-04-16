@@ -228,7 +228,7 @@ alocaMem:
 		movq %rbx, 8(%r10)				# proximo IG[1] = tam_bloco_old - tam_bloco_novo - 16 (tamanho IG)
 
 		# caso bloco livre atras, chama fusao
-		# call fusao
+		call fusao
 
 		jmp alocaMem
 
@@ -329,7 +329,11 @@ liberaMem:
 	movq LIVRE, %rax			# recebe endereco 16 bytes a frente de IG
 	movq %rax, -16(%rdi)		# IG[0] = LIVRE
 	
-	call fusao					
+	call fusao	
+
+	addq 8(%rbx), %rbx 			# %rbx += IG[1] -> prox bloco
+	addq $16, %rbx				# %rbx += 16 -> (IG anterior)
+	call soma
 
 	ret
 

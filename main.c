@@ -39,12 +39,12 @@ void testeFusao(void)
 	printf("p2 is: ");
 	printIG(p2, -16);
 
-	p3 = alocaMem(3);
+	p3 = alocaMem(sizeof(long double));
 	printf("p3 is: ");
 	printIG(p3, -16);
 
 	printf("proximo de p3 is:");
-	printIG(p3, 3);
+	printIG(p3, sizeof(long double));
 
 	liberaMem(p2);
 	liberaMem(p3);
