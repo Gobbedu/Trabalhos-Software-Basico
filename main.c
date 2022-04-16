@@ -26,7 +26,7 @@ int main(void){
 
 void testeFusao(void)
 {
-	void *p1, *p2, *ini;
+	void *p1, *p2, *p3, *ini;
 	iniciaAlocador();
 
 	ini = getInit();
@@ -39,13 +39,18 @@ void testeFusao(void)
 	printf("p2 is: ");
 	printIG(p2, -16);
 
-	printf("proximo de p2 is:");
-	printIG(p2, 2);
+	p3 = alocaMem(3);
+	printf("p3 is: ");
+	printIG(p3, -16);
 
-	liberaMem(p1);
+	printf("proximo de p3 is:");
+	printIG(p3, 3);
+
 	liberaMem(p2);
+	liberaMem(p3);
+	liberaMem(p1);
 
-	printf("libera p1 & p2, inicio is:");
+	printf("libera p1 & p2 & p3, inicio is:");
 	printIG(ini, 0);
 
 	finalizaAlocador();

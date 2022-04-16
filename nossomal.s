@@ -264,8 +264,8 @@ varredura:
 	cmpq %r11, 0(%rbx) 			# se o bloco estiver ocupado
 	je ocupado
 
-	addq 8(%rbx), %rbx 			# proximo bloco de memoria
-	addq $16, %rbx
+	addq 8(%rbx), %rbx 			# %rbx += IG[1] -> prox bloco
+	addq $16, %rbx				# %rbx += 16 -> (IG anterior)
 
 	cmpq %r10, 0(%rbx) 			# se livre
 	je varredura
@@ -322,6 +322,7 @@ fusao:
 	movq OCUPA, %r10
 	cmpq %r10, 0(%rcx) 			# se o bloco estiver ocupado
 	je ocupado					# va para o prox bloco
+
 	ret
 
 liberaMem:
