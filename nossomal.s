@@ -9,27 +9,14 @@
 	circular:		.quad 0			# se olhos ja circularam na heap, $1, else $0, usamos pra
 									# decidir se é preciso aumentar a heap ou nao
 
-	strinit:		.string "inicia printf\n"
-	straux: 		.string "brk[0 e 1]: %i %i\n"
-	naocabestr:		.string "nao cabe\n"
-	circulastr:		.string "circular eh : %i\n"
+	strinit:		.string " "
+	strnodo:		.string "( %i | %i ).."
+	strfinal:		.string "final Heap asm\n"
 
 .section .text
 
-.globl iniciaAlocador, finalizaAlocador, alocaMem, liberaMem, getBrk, getInit, 
+.globl iniciaAlocador, finalizaAlocador, alocaMem, liberaMem, imprimeMapa, PrintFinal
 # nao_cabe, nao_proximo, deu_volta,
-
-
-# retorna o endereco de brk em rax 
-getBrk:
-	movq $12, %rax
-	movq $0, %rdi
-	syscall # brk comes on %rax, 
-	ret		# returns %rax
-
-getInit:
-	movq inicio_heap, %rax;
-	ret
 
 iniciaAlocador:
 	# ||<= %brk
@@ -55,6 +42,7 @@ iniciaAlocador:
 	movq $12, %rax
 	movq %rbx, %rdi
 	syscall
+	movq %rax, final_heap
 
 	# registra INFORMACOES GERENCIAIS (IG)
 	# inicio_heap = Livre/Ocupado
@@ -266,67 +254,79 @@ alocaMem:
 #		 %rbx += 16
 #	  }
 # } 
-
+####### rbx -> r13  esses registradores sao preservados
+####### rcx -> r12
 ocupado:
 	movq LIVRE, %r10
 	movq OCUPA, %r11
+
+	movq 8(%r12), %rax			# move base 1 pra frente (rcx)
+	add %rax, %r12				# mudando a cabeça de verificação
+	addq $16, %r12				
+
+	movq 8(%r12), %rax			# move base 2 pra frente (rcx)
+	add %rax, %r12				# dois blocos a frente
+	addq $16, %r12				
+
+	movq 8(%r13), %rax 			# move (rbx) 1 pra frente 
+	addq %rax, %r13				# %rbx += 16 -> (IG anterior)
+	addq $16, %rbx				
+
+	movq 8(%r13), %rax 			# move (rbx) 2 pra frente
+	addq %rax, %r13				# %rbx += 16 -> (IG anterior)
+	addq $16, %r13				
 	
-	addq 8(%rcx), %rcx			# mudando a cabeça de verificação
-	addq $16, %rcx				#
-	addq 8(%rcx), %rcx			# dois blocos a frente
-	addq $16, %rcx				#
-	addq 8(%rbx), %rbx 			# %rbx += IG[1] -> prox bloco
-	addq $16, %rbx				# %rbx += 16 -> (IG anterior)
-	addq 8(%rbx), %rbx 			# %rbx += IG[1] -> prox bloco
-	addq $16, %rbx				# %rbx += 16 -> (IG anterior)
-	
-	cmpq %r10, 0(%rcx) 			# se o bloco estiver livre
+	cmpq %r10, 0(%r12) 			# se base estiver livre
 	je varredura				# inicia verificação a partir dele
 	
-	cmpq %r11, 0(%rcx) 			# se o bloco estiver ocupado
+	cmpq %r11, 0(%r12) 			# se base estiver ocupado
 	je ocupado					# muda a cabeça de verificação
 
 	ret
 
 soma:
-	movq 8(%rbx), %r12
-	addq %r12, 8(%rcx)			# IG[1] += tamanho do bloco que esta livre a frente
-	addq $16, 8(%rcx)			# %rcx += 16 -> (IG)
-	addq 8(%rbx), %rbx 			# %rbx += IG[1] -> prox bloco
-	addq $16, %rbx				# %rbx += 16 -> (IG anterior)
+	movq 8(%r13), %rax			# rcx[1] += rbx[1] + 16
+	addq %rax, 8(%r12)			# IG[1] += tamanho do bloco que esta livre a frente
+	addq $16, 8(%r12)			# %rcx += 16 -> (IG)
+
+	addq 8(%r13), %rax 			# avanca rbx	
+	addq %rax, %r13				# %rbx += IG[1] -> prox bloco
+	addq $16, %r13				# %rbx += 16 -> (IG anterior)
+	
 	ret
 
 varredura:
 	movq LIVRE, %r10
 	movq OCUPA, %r11
 	
-	cmpq %r10, 0(%rbx) 			# se o proximo bloco estiver livre
+	cmpq %r10, 0(%r13) 			# se o proximo bloco estiver livre
 	je soma						# soma ao tamanho do bloco anterior
 
-	cmpq %r11, 0(%rbx) 			# se o bloco estiver ocupado
+	cmpq %r11, 0(%r13) 			# se o bloco estiver ocupado
 	je ocupado
 
-	cmpq %r10, 0(%rbx) 			# se o bloco estiver livre
+	cmpq %r10, 0(%r13) 			# se o bloco estiver livre
 	je varredura				# soma
 
 	ret
 
 fusao:
-	movq inicio_heap, %rcx 		# inicio da heap vai pra %rax
-	movq inicio_heap, %rbx
+	movq inicio_heap, %r12 		# inicio da heap vai pra %rax
+	movq inicio_heap, %r13
 	
-	addq 8(%rbx), %rbx 			# %rbx += IG[1] -> prox bloco
-	addq $16, %rbx				# %rbx += 16 -> (IG anterior)
+	addq 8(%r13), %r13 			# %rbx += IG[1] -> prox bloco
+	addq $16, %r13				# %rbx += 16 -> (IG anterior)
 
 	movq LIVRE, %r10
-	cmpq %r10, 0(%rcx) 			# se o primeiro bloco estiver livre
+	cmpq %r10, 0(%r12) 			# se o primeiro bloco estiver livre
 	je varredura				# inicia a varredura
 
 	movq OCUPA, %r10
-	cmpq %r10, 0(%rcx) 			# se o bloco estiver ocupado
+	cmpq %r10, 0(%r12) 			# se o bloco estiver ocupado
 	je ocupado					# va para o prox bloco
 
 	ret
+
 
 liberaMem:
 	movq LIVRE, %rax			# recebe endereco 16 bytes a frente de IG
@@ -347,3 +347,56 @@ finalizaAlocador:
 
 fim:
 	ret
+
+
+# //////// pseudo codigo imprimeMapa ///////////
+#   void *final, *olhos;
+# 	long *olho;
+# 	char state;
+# 	final = getFim();
+# 	olhos = getInit();
+
+# 	while(olhos  + 16 < final)
+# 	{
+# 		olho = (long *)olhos;
+# 		state = (olho[0] == 0) ? 'L' : 'X';
+# 		// printf("( %c | %li )..", state, olho[1]);
+
+# 		olhos += olho[1] + 16;
+# 	}
+# 	// printf("final heap\n");
+PrintFinal:
+		movq $strfinal, %rdi
+		call printf
+		ret
+
+printNODO:
+	movq 0(%rdi), %rsi
+	movq 8(%rdi), %rdx
+	movq $strnodo, %rdi
+	call printf
+	ret
+
+imprimeMapa:
+	movq inicio_heap, %r12
+	movq final_heap, %r13
+	subq $16, %r13
+
+	loopMapa:
+		#print("nodo", estado, tamanho);
+		movq %r12, %rdi
+		call printNODO
+
+		# proximo nodo
+		movq 8(%r12), %rax				# endereco do proximo no em rax
+		addq %rax, %r12					# nodo = olhos + 8(olhos)
+		addq $16, %r12					# nodo = olhos + tam_bloco + 16
+
+		cmpq %r13, %r12					# if olho + 16 < final_heap, imprime proximo 
+		jl loopMapa
+
+		call PrintFinal
+		ret
+
+
+
