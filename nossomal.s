@@ -241,6 +241,8 @@ ocupado:
 	addq $16, %rcx				#
 	addq 8(%rbx), %rbx 			# %rbx += IG[1] -> prox bloco
 	addq $16, %rbx				# %rbx += 16 -> (IG anterior)
+	addq 8(%rbx), %rbx 			# %rbx += IG[1] -> prox bloco
+	addq $16, %rbx				# %rbx += 16 -> (IG anterior)
 	
 	cmpq %r10, 0(%rcx) 			# se o bloco estiver livre
 	je varredura				# inicia verificação a partir dele
@@ -252,6 +254,8 @@ soma:
 	movq 8(%rbx), %r12
 	addq %r12, 8(%rcx)			# IG[1] += tamanho do bloco que esta livre a frente
 	addq $16, 8(%rcx)			# %rcx += 16 -> (IG)
+	addq 8(%rbx), %rbx 			# %rbx += IG[1] -> prox bloco
+	addq $16, %rbx				# %rbx += 16 -> (IG anterior)
 	ret
 
 varredura:
@@ -263,9 +267,6 @@ varredura:
 	
 	cmpq %r11, 0(%rbx) 			# se o bloco estiver ocupado
 	je ocupado
-
-	addq 8(%rbx), %rbx 			# %rbx += IG[1] -> prox bloco
-	addq $16, %rbx				# %rbx += 16 -> (IG anterior)
 
 	cmpq %r10, 0(%rbx) 			# se livre
 	je varredura
@@ -331,9 +332,9 @@ liberaMem:
 	
 	call fusao	
 
-	addq 8(%rbx), %rbx 			# %rbx += IG[1] -> prox bloco
-	addq $16, %rbx				# %rbx += 16 -> (IG anterior)
-	call soma
+	# addq 8(%rbx), %rbx 			# %rbx += IG[1] -> prox bloco
+	# addq $16, %rbx				# %rbx += 16 -> (IG anterior)
+	# call soma
 
 	ret
 

@@ -31,11 +31,14 @@ void testeFusao(void)
 
 	ini = getInit();
 
+	printf("inicio is:");
+	printIG(ini, 0);
+
 	p1 = alocaMem(1);
 	printf("p1 is: ");
 	printIG(p1, -16);
 
-	p2 = alocaMem(2);
+	p2 = alocaMem(10);
 	printf("p2 is: ");
 	printIG(p2, -16);
 
