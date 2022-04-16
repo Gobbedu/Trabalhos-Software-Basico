@@ -232,49 +232,6 @@ alocaMem:
 
 		jmp alocaMem
 
-
-ocupado:
-	movq LIVRE, %r10
-	movq OCUPA, %r11
-	
-	addq 8(%rcx), %rcx			# mudando a cabeça de verificação
-	addq $16, %rcx				#
-	addq 8(%rbx), %rbx 			# %rbx += IG[1] -> prox bloco
-	addq $16, %rbx				# %rbx += 16 -> (IG anterior)
-	addq 8(%rbx), %rbx 			# %rbx += IG[1] -> prox bloco
-	addq $16, %rbx				# %rbx += 16 -> (IG anterior)
-	
-	cmpq %r10, 0(%rcx) 			# se o bloco estiver livre
-	je varredura				# inicia verificação a partir dele
-	
-	cmpq %r11, 0(%rcx) 			# se o bloco estiver ocupado
-	je ocupado					# muda a cabeça de verificação
-
-soma:
-	movq 8(%rbx), %r12
-	addq %r12, 8(%rcx)			# IG[1] += tamanho do bloco que esta livre a frente
-	addq $16, 8(%rcx)			# %rcx += 16 -> (IG)
-	addq 8(%rbx), %rbx 			# %rbx += IG[1] -> prox bloco
-	addq $16, %rbx				# %rbx += 16 -> (IG anterior)
-	ret
-
-varredura:
-	movq LIVRE, %r10
-	movq OCUPA, %r11
-	
-	cmpq %r10, 0(%rbx) 			# se o proximo bloco estiver livre
-	je soma						# soma ao tamanho do bloco anterior
-	
-	cmpq %r11, 0(%rbx) 			# se o bloco estiver ocupado
-	je ocupado
-
-	cmpq %r10, 0(%rbx) 			# se livre
-	je varredura
-
-	cmpq %r11, 0(%rbx) 			# se o bloco estiver ocupado
-	je ocupado
-
-	ret
 # pseudo codigo aki pfr
 # %rcx = inicio heap
 # %rbx = inicio heap
@@ -309,6 +266,51 @@ varredura:
 #		 %rbx += 16
 #	  }
 # } 
+
+ocupado:
+	movq LIVRE, %r10
+	movq OCUPA, %r11
+	
+	addq 8(%rcx), %rcx			# mudando a cabeça de verificação
+	addq $16, %rcx				#
+	addq 8(%rcx), %rcx			# dois blocos a frente
+	addq $16, %rcx				#
+	addq 8(%rbx), %rbx 			# %rbx += IG[1] -> prox bloco
+	addq $16, %rbx				# %rbx += 16 -> (IG anterior)
+	addq 8(%rbx), %rbx 			# %rbx += IG[1] -> prox bloco
+	addq $16, %rbx				# %rbx += 16 -> (IG anterior)
+	
+	cmpq %r10, 0(%rcx) 			# se o bloco estiver livre
+	je varredura				# inicia verificação a partir dele
+	
+	cmpq %r11, 0(%rcx) 			# se o bloco estiver ocupado
+	je ocupado					# muda a cabeça de verificação
+
+	ret
+
+soma:
+	movq 8(%rbx), %r12
+	addq %r12, 8(%rcx)			# IG[1] += tamanho do bloco que esta livre a frente
+	addq $16, 8(%rcx)			# %rcx += 16 -> (IG)
+	addq 8(%rbx), %rbx 			# %rbx += IG[1] -> prox bloco
+	addq $16, %rbx				# %rbx += 16 -> (IG anterior)
+	ret
+
+varredura:
+	movq LIVRE, %r10
+	movq OCUPA, %r11
+	
+	cmpq %r10, 0(%rbx) 			# se o proximo bloco estiver livre
+	je soma						# soma ao tamanho do bloco anterior
+
+	cmpq %r11, 0(%rbx) 			# se o bloco estiver ocupado
+	je ocupado
+
+	cmpq %r10, 0(%rbx) 			# se o bloco estiver livre
+	je varredura				# soma
+
+	ret
+
 fusao:
 	movq inicio_heap, %rcx 		# inicio da heap vai pra %rax
 	movq inicio_heap, %rbx
@@ -330,11 +332,7 @@ liberaMem:
 	movq LIVRE, %rax			# recebe endereco 16 bytes a frente de IG
 	movq %rax, -16(%rdi)		# IG[0] = LIVRE
 	
-	call fusao	
-
-	# addq 8(%rbx), %rbx 			# %rbx += IG[1] -> prox bloco
-	# addq $16, %rbx				# %rbx += 16 -> (IG anterior)
-	# call soma
+	call fusao
 
 	ret
 
