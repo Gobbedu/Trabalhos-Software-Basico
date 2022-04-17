@@ -266,7 +266,7 @@ ocupado:
 
 	movq 8(%r13), %rax 			# move (rbx) 1 pra frente 
 	addq %rax, %r13				# %rbx += 16 -> (IG anterior)
-	addq $16, %rbx		
+	addq $16, %r13		
 
 	cmpq %r14, %r13				# se esta no fim da heap
 	jge fim						# sai
@@ -287,16 +287,16 @@ seg_ocupado:
 								# para a posição do segundo olho
 
 	movq 8(%r12), %rax			# move base 1 pra frente (rcx)
-	addq %rax, %r12				# mudando a cabeça de verificação
-	addq $16, %r12			
+	addq $16, %rax
+	addq %rax, %r12				# mudando a cabeça de verificação			
 
 	movq 8(%r13), %rax 			# move (rbx) 1 pra frente 
 	addq %rax, %r13				# %rbx += 16 -> (IG anterior)
-	addq $16, %rbx	
+	addq $16, %r13	
 
 	movq 8(%r13), %rax 			# move (rbx) 2 pra frente 
 	addq %rax, %r13				# %rbx += 16 -> (IG anterior)
-	addq $16, %rbx		
+	addq $16, %r13		
 
 	cmpq %r14, %r13	 			# se esta no fim da heap
 	jge fim						# sai
@@ -314,13 +314,6 @@ soma:
 	addq $16, %rax				# %rcx += 16 -> (IG)
 	addq %rax, 8(%r12)			# IG[1] += tamanho do bloco que esta livre a frente
 
-	movq 8(%r13), %rax 			# avanca rbx	
-	addq %rax, %r13				# %rbx += IG[1] -> prox bloco
-	addq $16, %r13				# %rbx += 16 -> (IG anterior)
-
-	cmpq %r14, %r13				# se esta no fim da heap
-	jge fim						# sai
-
 	ret
 
 varredura:
@@ -328,7 +321,14 @@ varredura:
 	movq OCUPA, %r11
 	
 	cmpq %r10, 0(%r13) 			# se o proximo bloco estiver livre
-	jmp soma					# soma ao tamanho do bloco anterior
+	je soma						# soma ao tamanho do bloco anterior
+
+	movq 8(%r13), %rax 			# avanca rbx	
+	addq %rax, %r13				# %rbx += IG[1] -> prox bloco
+	addq $16, %r13				# %rbx += 16 -> (IG anterior)
+
+	cmpq %r14, %r13				# se esta no fim da heap
+	jge fim						# sai
 
 	cmpq %r11, 0(%r13) 			# se o bloco estiver ocupado
 	je seg_ocupado
@@ -382,8 +382,9 @@ finalizaAlocador:
 	ret
 
 fim:
-	
-
+	movq $60, %rax
+	movq $13, %rdi
+	syscall
 
 # //////// pseudo codigo imprimeMapa ///////////
 #   void *final, *olhos;
