@@ -371,7 +371,7 @@ liberaMem:
 	movq LIVRE, %rax			# recebe endereco 16 bytes a frente de IG
 	movq %rax, -16(%rdi)		# IG[0] = LIVRE
 	
-	call fusao
+	jmp fusao
 
 	ret
 
