@@ -323,21 +323,25 @@ soma:
 
 	ret
 
+soma2:
+	movq LIVRE, %r10
+
+	cmpq %r10, 0(%r13) 			# se o proximo bloco estiver livre
+	jmp soma					# soma ao tamanho do bloco anterior
+
+	ret
+
 varredura:
 	movq LIVRE, %r10
 	movq OCUPA, %r11
 	
-	cmpq %r10, 0(%r13) 			# se o proximo bloco estiver livre
-	je soma						# soma ao tamanho do bloco anterior
+	call soma2					# teste da soma
 
 	cmpq %r11, 0(%r13) 			# se o bloco estiver ocupado
 	je seg_ocupado
 
 	cmpq %r10, 0(%r13) 			# se o bloco estiver livre
 	je varredura				# soma
-
-	cmpq %r14, %r13				# se esta no fim da heap
-	je fim						# sai
 
 	ret
 
