@@ -323,19 +323,12 @@ soma:
 
 	ret
 
-soma2:
-	movq LIVRE, %r10
-
-	cmpq %r10, 0(%r13) 			# se o proximo bloco estiver livre
-	jmp soma					# soma ao tamanho do bloco anterior
-
-	ret
-
 varredura:
 	movq LIVRE, %r10
 	movq OCUPA, %r11
 	
-	call soma2					# teste da soma
+	cmpq %r10, 0(%r13) 			# se o proximo bloco estiver livre
+	jmp soma					# soma ao tamanho do bloco anterior
 
 	cmpq %r11, 0(%r13) 			# se o bloco estiver ocupado
 	je seg_ocupado
@@ -352,7 +345,8 @@ fusao:
 	movq final_heap, %rax		# final da heap 
 	movq %rax, %r14
 	
-	addq 8(%r13), %r13 			# %rbx += IG[1] -> prox bloco
+	addq 8(%r13), %rcx 			# %rbx += IG[1] -> prox bloco
+	addq %rcx, %r13
 	addq $16, %r13				# %rbx += 16 -> (IG anterior)
 
 	cmpq %r14, %r12				# se esta no fim da heap
