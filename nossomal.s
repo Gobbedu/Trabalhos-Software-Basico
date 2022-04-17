@@ -205,7 +205,7 @@ alocaMem:
 		# cria proximo IG SEM MEXER NOS OLHOS  r10 -> vai ser o proximo 'olho'
 		movq olhos, %r10				# r10 = endereco de olhos
 		addq $16, %r10					# r10 += 16
-		movq 16(%r10), %rbx			# rbx = tamanho do bloco
+		movq 16(%r10), %rbx				# rbx = tamanho do bloco
 		addq %rbx, %r10					# proximo olhos = olhos + tam bloco + 16(tam IG)
 
 		movq LIVRE, %rbx				# prox IG = (ender de olhos) + tam antigo bloco + 16 [tam IG[1] + prox byte dpois do tamAloc]
@@ -254,45 +254,73 @@ alocaMem:
 #		 %rbx += 16
 #	  }
 # } 
-####### rbx -> r13  esses registradores sao preservados
-####### rcx -> r12
+# rbx -> r13  esses registradores sao preservados
+# rcx -> r12
 ocupado:
 	movq LIVRE, %r10
 	movq OCUPA, %r11
 
 	movq 8(%r12), %rax			# move base 1 pra frente (rcx)
-	add %rax, %r12				# mudando a cabeça de verificação
-	addq $16, %r12				
-
-	movq 8(%r12), %rax			# move base 2 pra frente (rcx)
-	add %rax, %r12				# dois blocos a frente
-	addq $16, %r12				
+	addq %rax, %r12				# mudando a cabeça de verificação
+	addq $16, %r12			
 
 	movq 8(%r13), %rax 			# move (rbx) 1 pra frente 
 	addq %rax, %r13				# %rbx += 16 -> (IG anterior)
-	addq $16, %rbx				
+	addq $16, %rbx		
 
-	movq 8(%r13), %rax 			# move (rbx) 2 pra frente
-	addq %rax, %r13				# %rbx += 16 -> (IG anterior)
-	addq $16, %r13				
-	
-	cmpq %r10, 0(%r12) 			# se base estiver livre
-	je varredura				# inicia verificação a partir dele
+	cmpq %r14, %r13				# se esta no fim da heap
+	jge fim						# sai
 	
 	cmpq %r11, 0(%r12) 			# se base estiver ocupado
 	je ocupado					# muda a cabeça de verificação
 
-	ret
+	cmpq %r10, 0(%r12) 			# se base estiver livre
+	je varredura				# inicia verificação a partir dele
+
+	jmp fim
+
+seg_ocupado:
+	movq LIVRE, %r10
+	movq OCUPA, %r11
+
+	movq %r13, %r12				# mudando a cabeça de verificação
+								# para a posição do segundo olho
+
+	movq 8(%r12), %rax			# move base 1 pra frente (rcx)
+	addq %rax, %r12				# mudando a cabeça de verificação
+	addq $16, %r12			
+
+	movq 8(%r13), %rax 			# move (rbx) 1 pra frente 
+	addq %rax, %r13				# %rbx += 16 -> (IG anterior)
+	addq $16, %rbx	
+
+	movq 8(%r13), %rax 			# move (rbx) 2 pra frente 
+	addq %rax, %r13				# %rbx += 16 -> (IG anterior)
+	addq $16, %rbx		
+
+	cmpq %r14, %r13	 			# se esta no fim da heap
+	jge fim						# sai
+	
+	cmpq %r11, 0(%r12) 			# se base estiver ocupado
+	je ocupado					# muda a cabeça de verificação
+
+	cmpq %r10, 0(%r12) 			# se base estiver livre
+	je varredura				# inicia verificação a partir dele
+
+	jmp fim
 
 soma:
 	movq 8(%r13), %rax			# rcx[1] += rbx[1] + 16
+	addq $16, %rax				# %rcx += 16 -> (IG)
 	addq %rax, 8(%r12)			# IG[1] += tamanho do bloco que esta livre a frente
-	addq $16, 8(%r12)			# %rcx += 16 -> (IG)
 
 	movq 8(%r13), %rax 			# avanca rbx	
 	addq %rax, %r13				# %rbx += IG[1] -> prox bloco
 	addq $16, %r13				# %rbx += 16 -> (IG anterior)
-	
+
+	cmpq %r14, %r13				# se esta no fim da heap
+	jge fim						# sai
+
 	ret
 
 varredura:
@@ -303,30 +331,41 @@ varredura:
 	je soma						# soma ao tamanho do bloco anterior
 
 	cmpq %r11, 0(%r13) 			# se o bloco estiver ocupado
-	je ocupado
+	je seg_ocupado
 
 	cmpq %r10, 0(%r13) 			# se o bloco estiver livre
 	je varredura				# soma
+
+	cmpq %r14, %r13				# se esta no fim da heap
+	je fim						# sai
 
 	ret
 
 fusao:
 	movq inicio_heap, %r12 		# inicio da heap vai pra %rax
 	movq inicio_heap, %r13
+
+	movq final_heap, %rax		# final da heap 
+	movq %rax, %r14
 	
 	addq 8(%r13), %r13 			# %rbx += IG[1] -> prox bloco
 	addq $16, %r13				# %rbx += 16 -> (IG anterior)
 
-	movq LIVRE, %r10
-	cmpq %r10, 0(%r12) 			# se o primeiro bloco estiver livre
-	je varredura				# inicia a varredura
+	cmpq %r14, %r12				# se esta no fim da heap
+	jge fim						# sai
+
+	cmpq %r14, %r13				# se esta no fim da heap
+	jge fim						# sai
 
 	movq OCUPA, %r10
 	cmpq %r10, 0(%r12) 			# se o bloco estiver ocupado
 	je ocupado					# va para o prox bloco
 
-	ret
+	movq LIVRE, %r10
+	cmpq %r10, 0(%r12) 			# se o primeiro bloco estiver livre
+	je varredura				# inicia a varredura
 
+	ret
 
 liberaMem:
 	movq LIVRE, %rax			# recebe endereco 16 bytes a frente de IG
@@ -335,7 +374,6 @@ liberaMem:
 	call fusao
 
 	ret
-
 
 finalizaAlocador:
 	# diminui brk para o endereco inicial
@@ -346,6 +384,7 @@ finalizaAlocador:
 	ret
 
 fim:
+	popq %rbp
 	ret
 
 
