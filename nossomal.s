@@ -388,8 +388,7 @@ finalizaAlocador:
 	ret
 
 fim:
-	popq %rbp
-	ret
+	
 
 
 # //////// pseudo codigo imprimeMapa ///////////
