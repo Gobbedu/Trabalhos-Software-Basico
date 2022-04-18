@@ -1,7 +1,7 @@
 .section .data
 	inicio_heap: 	.quad 0			# valor inicial da heap, antes do iniciaAlocador
 	final_heap:		.quad 0			# valor final da heap, em qualquer dado momento
-	Block_size:		.quad 4096		# tamanho dos blocos alocados, quando heap cheia
+	Block_size:		.quad 4080		# tamanho dos blocos alocados, quando heap cheia
 	LIVRE: 			.quad 0			# bool que representa um bloco LIVRE
 	OCUPA:			.quad 1			# bool que representa um bloco OCUPADO
 	
@@ -53,7 +53,7 @@ iniciaAlocador:
 	movq LIVRE, %rbx						# rbx = LIVRE
 	movq %rbx, 0(%rax)						# inicio_heap[0] = bloco seguinte esta LIVRE
 	movq Block_size, %rbx					# rbx = 4096
-	subq $16, %rbx							# tamanho disponivel eh 4096 - tamanho IG
+	# subq $16, %rbx							# tamanho disponivel eh 4096 - tamanho IG
 	movq %rbx, 8(%rax)						# inicio_heap[1] = tam disponivel (4080)
 
 	movq inicio_heap, %rax					# inicia olhos para primeiro nó
@@ -309,9 +309,25 @@ seg_ocupado:
 	jmp fim
 
 soma:
+	movq LIVRE, %r10
+	movq OCUPA, %r11
+
 	movq 8(%r13), %rax			# rcx[1] += rbx[1] + 16
 	addq $16, %rax				# %rcx += 16 -> (IG)
 	addq %rax, 8(%r12)			# IG[1] += tamanho do bloco que esta livre a frente
+
+	movq 8(%r13), %rax 			# move (rbx) 1 pra frente 
+	addq %rax, %r13				# %rbx += 16 -> (IG anterior)
+	addq $16, %r13	
+
+	cmpq %r14, %r13				# se esta no fim da heap
+	jge fim						# sai
+	
+	cmpq %r11, 0(%r12) 			# se base estiver ocupado
+	je ocupado					# muda a cabeça de verificação
+
+	cmpq %r10, 0(%r12) 			# se base estiver livre
+	je varredura				# inicia verificação a partir dele
 
 	ret
 
@@ -322,14 +338,8 @@ varredura:
 	cmpq %r10, 0(%r13) 			# se o proximo bloco estiver livre
 	je soma						# soma ao tamanho do bloco anterior
 
-	cmpq %r14, %r13				# se esta no fim da heap
-	jge fim						# sai
-
 	cmpq %r11, 0(%r13) 			# se o bloco estiver ocupado
 	je seg_ocupado
-
-	cmpq %r10, 0(%r13) 			# se o bloco estiver livre
-	je varredura				# soma
 
 	ret
 
@@ -377,9 +387,7 @@ finalizaAlocador:
 	ret
 
 fim:
-	movq $60, %rax
-	movq $13, %rdi
-	syscall
+	ret
 
 # //////// pseudo codigo imprimeMapa ///////////
 #   void *final, *olhos;
