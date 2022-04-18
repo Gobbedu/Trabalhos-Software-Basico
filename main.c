@@ -45,9 +45,5 @@ void teste(void)
 	printf("free  p3: ");
 	liberaMem(p3);
 	imprimeMapa();
-
-	
-	
-	
 }
 
