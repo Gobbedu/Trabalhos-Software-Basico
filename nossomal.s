@@ -21,7 +21,7 @@
 
 iniciaAlocador:
 	# ||<= %brk
-	# | L | 4096 |  ---- 4096 ---- |<= %brk
+	# | L | 4080 |  ---- 4080 ---- |<= %brk (um total de 4096)
 
 	# chama printf antes pra alocar o buffer e nn atrapalhar a brk
 	movq $strinit, %rdi

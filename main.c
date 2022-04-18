@@ -9,12 +9,13 @@ extern void imprimeMapa();
 
 // funcoes auxiliares
 void teste(void);
+void teste2(void);
 
 
 int main(void){
 	iniciaAlocador();
 
-	teste();
+	teste2();
 
 	finalizaAlocador();
 	return 0;
@@ -51,3 +52,15 @@ void teste(void)
 	
 }
 
+void teste2()
+{
+	void *p1, *p2, *p3;
+
+	p1 = alocaMem(4079);
+	printf("aloca 4080");
+	imprimeMapa();
+
+	liberaMem(p1);
+	printf("libera 4020");
+	imprimeMapa();
+}
