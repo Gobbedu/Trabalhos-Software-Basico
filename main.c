@@ -27,9 +27,9 @@ void teste(void)
 	printf("\ninicio:   ");
 	imprimeMapa();
 	
-	p1 = alocaMem(4);
-	p2 = alocaMem(4);
-	p3 = alocaMem(4);
+	p1 = alocaMem(1);
+	p2 = alocaMem(2);
+	p3 = alocaMem(3);
 
 	printf("aloca  3: ");
 	imprimeMapa();

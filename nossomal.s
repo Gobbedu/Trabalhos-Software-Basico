@@ -291,13 +291,13 @@ seg_ocupado:
 	addq %rax, %r12				# mudando a cabeça de verificação			
 
 	movq 8(%r13), %rax 			# move (rbx) 1 pra frente 
+	addq $16, %rax	
 	addq %rax, %r13				# %rbx += 16 -> (IG anterior)
-	addq $16, %r13	
 
 	movq 8(%r13), %rax 			# move (rbx) 2 pra frente 
+	addq $16, %rax	
 	addq %rax, %r13				# %rbx += 16 -> (IG anterior)
-	addq $16, %r13		
-
+	
 	cmpq %r14, %r13	 			# se esta no fim da heap
 	jge fim						# sai
 	
@@ -323,10 +323,6 @@ varredura:
 	cmpq %r10, 0(%r13) 			# se o proximo bloco estiver livre
 	je soma						# soma ao tamanho do bloco anterior
 
-	movq 8(%r13), %rax 			# avanca rbx	
-	addq %rax, %r13				# %rbx += IG[1] -> prox bloco
-	addq $16, %r13				# %rbx += 16 -> (IG anterior)
-
 	cmpq %r14, %r13				# se esta no fim da heap
 	jge fim						# sai
 
@@ -346,8 +342,8 @@ fusao:
 	movq %rax, %r14
 	
 	addq 8(%r13), %rcx 			# %rbx += IG[1] -> prox bloco
+	addq $16, %rcx				# %rbx += 16 -> (IG anterior)
 	addq %rcx, %r13
-	addq $16, %r13				# %rbx += 16 -> (IG anterior)
 
 	cmpq %r14, %r12				# se esta no fim da heap
 	jge fim						# sai
