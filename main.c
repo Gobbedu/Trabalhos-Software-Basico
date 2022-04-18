@@ -35,20 +35,20 @@ void teste(void)
 	printf("aloca  3: ");
 	imprimeMapa();
 
-	printf("free  p1: ");
-	liberaMem(p1);
+	printf("free  p3: ");
+	liberaMem(p3);
 	imprimeMapa();
 
 	printf("free  p2: ");
 	liberaMem(p2);
 	imprimeMapa();
 
-	printf("free  p3: ");
-	liberaMem(p3);
+	printf("free  p1: ");
+	liberaMem(p1);
 	imprimeMapa();
 
 	
-	
+
 	
 }
 
