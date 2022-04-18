@@ -266,7 +266,7 @@ ocupado:
 
 	movq 8(%r13), %rax 			# move (rbx) 1 pra frente 
 	addq %rax, %r13				# %rbx += 16 -> (IG anterior)
-	addq $16, %r13		
+	addq $16, %r13	
 
 	cmpq %r14, %r13				# se esta no fim da heap
 	jge fim						# sai
