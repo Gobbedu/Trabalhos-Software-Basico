@@ -15,7 +15,8 @@ void teste2(void);
 int main(void){
 	iniciaAlocador();
 
-	teste2();
+	teste();
+	// teste2(); // PC EXPLODE CUIDADO!!
 
 	finalizaAlocador();
 	return 0;
