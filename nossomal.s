@@ -18,6 +18,7 @@
 .globl iniciaAlocador, finalizaAlocador, alocaMem, liberaMem, imprimeMapa, PrintFinal
 # nao_cabe, nao_proximo, deu_volta,
 
+
 iniciaAlocador:
 	# ||<= %brk
 	# | L | 4096 |  ---- 4096 ---- |<= %brk
@@ -99,12 +100,10 @@ alocaMem:
 		jne nao_cabe
 
 		movq %rdi, %rax					# rax = tamAloc
-		# addq $16, %rax				# tamanho ja eh guardado em IG corrigido
+		addq $16, %rax					# cabe um aloc e o proximo IG?
 		cmpq %rax, %rbx					# %rbx <= %rax
-		jl nao_cabe					# jump if tamanho nodo < tamAloc + 16
+		jl nao_cabe						# jump if tamanho nodo < tamAloc + 16
 
-		# print auxiliar
-		# movq $1, %rax # 1 CABE
 
 		# circular = 0					# reinicia flag da volta
 		movq $0, circular
@@ -119,14 +118,14 @@ alocaMem:
 		# cria proximo IG				# r10 -> vai ser o proximo 'olho'
 		movq olhos, %r10				# r10 = endereco de olhos
 		addq $16, %r10					# r10 += 16
-		addq %rdi, %r10					# r10 += novo tamanho
+		addq %rdi, %r10					# r10 = olhos + novo tamanho + 16
 
-		movq LIVRE, %rbx				# prox IG = (ender de olhos) + tam antigo bloco + 16 [tam IG[1] + prox byte dpois do tamAloc]
+		movq LIVRE, %rbx				# proximo IG = (ender de olhos) + tam antigo bloco + 16 [tam IG[1] + prox byte dpois do tamAloc]
 		movq %rbx, 0(%r10)				# proximo IG[0] -> LIVRE
 		
 		movq %r11, %rbx					# rbx = tamanho antigo bloco
 		subq 8(%r9), %rbx				# rbx -= tamanho novo bloco
-		subq $16, %rbx					# rbx -= 16
+		subq $16, %rbx					# rbx -= 16 
 		movq %rbx, 8(%r10)				# proximo IG[1] = tam_bloco_old - tam_bloco_novo - 16 (tamanho IG)
 		
 		# return endereco

@@ -26,7 +26,8 @@ main: nossomal.o
 	ld nossomal.o main.o -o $(NAME) $(DYLINK) -lc
 
 %.o: %.s
-	as $(PIE) nossomal.s -o nossomal.o
+	as $(PIE) -g nossomal.s -o nossomal.o
+
 
 clean:
 	rm *.o
