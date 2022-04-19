@@ -7,7 +7,7 @@
 	
 	olhos:			.quad 0			# variavel que contem o ultimo nó analizado
 	circular:		.quad 0			# se olhos ja circularam na heap, $1, else $0, usamos pra
-									# decidir se é preciso aumentar a heap ou nao
+	 								# decidir se é preciso aumentar a heap ou nao
 
 	strinit:		.string " "
 	strnodo:		.string "( %i | %i ).."
@@ -22,6 +22,8 @@
 iniciaAlocador:
 	# ||<= %brk
 	# | L | 4080 |  ---- 4080 ---- |<= %brk (um total de 4096)
+	# ^olhos
+	#            ^16(olhos)
 
 	# chama printf antes pra alocar o buffer e nn atrapalhar a brk
 	movq $strinit, %rdi
@@ -32,6 +34,7 @@ iniciaAlocador:
 	movq $0, %rdi							# me diga pfr
 	syscall 								# brk vem no %rax
 	movq %rax, inicio_heap					# inicio_heap = endereco de brk
+	movq %rax, olhos						# inicia olhos para primeiro nó
 
 	# aumenta heap em Block_size bytes + IG
 	movq inicio_heap, %rbx					# rbx = brk
@@ -46,8 +49,8 @@ iniciaAlocador:
 	movq %rax, final_heap
 
 	# registra INFORMACOES GERENCIAIS (IG)
-	# inicio_heap = Livre/Ocupado
-	# 8(inicio_heap) = tamanho Livre/Ocupado  
+	# inicio_heap = Livre
+	# 8(inicio_heap) = tamanho Livre
 	# tam total disp = tam bloco - tam IG
 	movq inicio_heap, %rax					# rax = inicio_heap
 	movq LIVRE, %rbx						# rbx = LIVRE
@@ -55,15 +58,6 @@ iniciaAlocador:
 	movq Block_size, %rbx					# rbx = 4096
 	# subq $16, %rbx							# tamanho disponivel eh 4096 - tamanho IG
 	movq %rbx, 8(%rax)						# inicio_heap[1] = tam disponivel (4080)
-
-	movq inicio_heap, %rax					# inicia olhos para primeiro nó
-	movq %rax, olhos
-
-	# imprime conteudo da IG
-	# movq (%rax), %rsi 	
-	# movq 8(%rax), %rdx
-	# movq $straux, %rdi
-	# call printf
 
 	ret
 
@@ -96,20 +90,20 @@ alocaMem:
 		movq 8(%r9), %rbx				# rbx = tamanho nodo
 
 		# if ( cabe )
-		cmpq %rax, LIVRE				# 0(olhos)-> IG[0] != LIVRE		
-		jne nao_cabe
+		movq LIVRE, %rcx
+		cmpq %rax, %rcx					# 0(olhos)-> IG[0] != LIVRE		
+		jne nao_cabe					
 
 		movq %rdi, %rax					# rax = tamAloc
 		addq $16, %rax					# cabe um aloc e o proximo IG?
 		cmpq %rax, %rbx					# %rbx <= %rax
-		jl nao_cabe						# jump if tamanho nodo < tamAloc + 16
+		jl nao_cabe					# jump if tamanho nodo < tamAloc + 16
 
-
-		# circular = 0					# reinicia flag da volta
-		movq $0, circular
+		# coube!
+		movq $0, circular				# circular = 0 reinicia flag da volta
 		
-		# aloca tamAloc					# seta IG
-		movq OCUPA, %rax
+		# aloca tamAloc					
+		movq OCUPA, %rax				# seta IG
 		movq %rax, 0(%r9)				# bloco OCUPADO
 
 		movq 8(%r9), %r11 				# r11 = tamanho antigo do bloco
@@ -139,28 +133,17 @@ alocaMem:
 
 	# if(!cabe)	
 	nao_cabe: 
-		# print auxiliar
-		# movq $0, %rax # 0 NAO CABE
-		# ret
 		# if(proximo):					# 8(olhos) + tamAloc + 16 < final_heap
 		# 	proximo						# olhos = olhos + 8(olhos) + 16     
 		# 	jmp loop
-
-		# print auxiliar printf("nao cabe"); printf("circular eh %i", circular);
-		# movq $naocabestr, %rdi
-		# call printf
-
-		# movq circular, %rsi 	
-		# movq $circulastr, %rdi
-		# call printf
-
 
 		movq olhos, %r9
 		movq 8(%r9), %rax				# endereco do proximo no em rax
 		addq %r9, %rax					# rax = olhos + 8(olhos)
 		addq $16, %rax					# rax = olhos + tam_bloco + 16
 
-		cmpq final_heap, %rax			# se proximo >= heap, rax >= final_heap
+		movq final_heap, %rcx
+		cmpq %rcx, %rax					# se proximo >= heap nao prox
 		jge nao_proximo
 
 		movq %rax, olhos				# olhos = proximo
@@ -193,29 +176,42 @@ alocaMem:
 		movq Block_size, %rax		# tamanho a aumentar a heap
 		movq final_heap, %rbx		# rax novo final_heap 
 
-		addq %rax, %rbx				# rbx = final_heap += 4096
+		movq %rdi, %r15
 
+		addq %rax, %rbx				# rbx = final_heap += 4096
+		addq $16, %rbx
 		movq $12, %rax				# SO favor aumentar
 		movq %rbx, %rdi				# a heap para %rbx
 		syscall		
-		movq final_heap, %r11		# final_heap antigo	
-		movq %rax, final_heap		# atualiza valor final_heap			
+		movq %rax, final_heap		# atualiza valor final_heap	
+
+		movq %r15, %rdi		
 
 		# cria proximo IG SEM MEXER NOS OLHOS  r10 -> vai ser o proximo 'olho'
-		movq olhos, %r10				# r10 = endereco de olhos
-		addq $16, %r10					# r10 += 16
-		movq 16(%r10), %rbx				# rbx = tamanho do bloco
-		addq %rbx, %r10					# proximo olhos = olhos + tam bloco + 16(tam IG)
+		movq olhos, %r12				# r12 = endereco de olhos
+		movq 8(%r12), %rax				# tamanho do bloco
+		addq %rax, %r12					# r12 += tam bloco
+		addq $16, %r12					# proximo olhos = olhos + tam bloco + 16(tam IG)
 
 		movq LIVRE, %rbx				# prox IG = (ender de olhos) + tam antigo bloco + 16 [tam IG[1] + prox byte dpois do tamAloc]
-		movq %rbx, 0(%r10)				# proximo IG[0] -> LIVRE
+		movq %rbx, 0(%r12)				# proximo IG[0] -> LIVRE // antes dava ruim aki
 		
-		movq Block_size, %rbx			# rbx = tamanho antigo bloco
-		subq $16, %rbx					# rbx -= tamanho novo bloco
-		movq %rbx, 8(%r10)				# proximo IG[1] = tam_bloco_old - tam_bloco_novo - 16 (tamanho IG)
+		movq Block_size, %rbx			# rbx = tamanho  bloco
+		movq %rbx, 8(%r12)				# 8(proximo) =  tam_bloco_novo 
 
-		# caso bloco livre atras, chama fusao
-		call fusao
+		# caso bloco livre atras, junta
+		movq LIVRE, %rax
+		movq olhos, %rbx
+		movq 0(%rbx), %rcx
+		cmpq %rax, %rcx
+		jne alocaMem
+
+		# junta livre atras com livre agora
+		movq Block_size, %rax 
+		movq 8(%rbx), %rcx
+		addq $16, %rcx 
+		addq %rax, %rcx
+		movq %rcx, 8(%rbx)
 
 		jmp alocaMem
 

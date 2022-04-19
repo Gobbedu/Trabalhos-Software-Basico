@@ -15,8 +15,8 @@ void teste2(void);
 int main(void){
 	iniciaAlocador();
 
-	teste();
-	// teste2(); // PC EXPLODE CUIDADO!!
+	// teste();
+	teste2();
 
 	finalizaAlocador();
 	return 0;
@@ -29,9 +29,9 @@ void teste(void)
 	printf("\ninicio:   ");
 	imprimeMapa();
 	
-	p1 = alocaMem(1);
-	p2 = alocaMem(2);
-	p3 = alocaMem(3);
+	p1 = alocaMem(4);
+	p2 = alocaMem(4);
+	p3 = alocaMem(4);
 
 	printf("aloca  3: ");
 	imprimeMapa();
@@ -49,19 +49,33 @@ void teste(void)
 	imprimeMapa();
 
 	
-
-	
 }
 
 void teste2()
 {
 	void *p1, *p2, *p3;
 
-	p1 = alocaMem(4079);
+	p1 = alocaMem(4080);
 	printf("aloca 4080");
 	imprimeMapa();
 
+	p2 = alocaMem(2040);
+	printf("aloca  2040");
+	imprimeMapa();
+
+	printf("libera 4080");
 	liberaMem(p1);
-	printf("libera 4020");
+	imprimeMapa();
+
+	p1 = alocaMem(3000);
+	printf("aloca  3000");
+	imprimeMapa();
+
+	printf("libera 2040");
+	liberaMem(p2);
+	imprimeMapa();
+
+	printf("libera 3000");
+	liberaMem(p1);
 	imprimeMapa();
 }
