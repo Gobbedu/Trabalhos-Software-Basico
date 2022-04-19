@@ -11,14 +11,16 @@ extern void imprimeMapa();
 void teste(void);
 void teste2(void);
 void teste3(void);
+void teste4(void);
 
 
 int main(void){
 	iniciaAlocador();
 
-	teste();
+	//teste();
 	//teste2();
 	//teste3();
+	teste4();
 
 	finalizaAlocador();
 	return 0;
@@ -38,24 +40,17 @@ void teste(void)
 	printf("aloca  3: ");
 	imprimeMapa();
 
-	printf("free  p1: ");
-	liberaMem(p1);
-	imprimeMapa();
-
 	printf("free  p3: ");
 	liberaMem(p3);
+	imprimeMapa();
+
+	printf("free  p1: ");
+	liberaMem(p1);
 	imprimeMapa();
 
 	printf("free  p2: ");
 	liberaMem(p2);
 	imprimeMapa();
-
-	
-
-	
-
-	
-
 	
 }
 
@@ -130,5 +125,19 @@ void teste3()
 	liberaMem(m3);
 	
 	printf("\nfim:   ");
+	imprimeMapa();
+}
+
+void teste4()
+{
+	void *p1, *p2;
+	p1 = alocaMem(4);
+	p2 = alocaMem(4);
+
+	imprimeMapa();
+	liberaMem(p1);
+	imprimeMapa();
+	liberaMem(p2);
+
 	imprimeMapa();
 }

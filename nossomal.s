@@ -313,8 +313,9 @@ soma:
 	addq %rax, 8(%r12)			# IG[1] += tamanho do bloco que esta livre a frente
 
 	movq 8(%r13), %rax 			# move (rbx) 1 pra frente 
+	addq $16, %rax
 	addq %rax, %r13				# %rbx += 16 -> (IG anterior)
-	addq $16, %r13	
+		
 
 	cmpq %r14, %r13				# se esta no fim da heap
 	jge fim						# sai
