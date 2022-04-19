@@ -319,10 +319,10 @@ soma:
 	cmpq %r14, %r13				# se esta no fim da heap
 	jge fim						# sai
 	
-	cmpq %r11, 0(%r12) 			# se base estiver ocupado
-	je ocupado					# muda a cabeça de verificação
+	cmpq %r11, 0(%r13) 			# se base estiver ocupado
+	je seg_ocupado					# muda a cabeça de verificação
 
-	cmpq %r10, 0(%r12) 			# se base estiver livre
+	cmpq %r10, 0(%r13) 			# se base estiver livre
 	je varredura				# inicia verificação a partir dele
 
 	ret
