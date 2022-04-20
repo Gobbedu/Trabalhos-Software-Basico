@@ -1,11 +1,15 @@
-#include <stdio.h>
+/********************************************************
+*   Implementação de um alocador de memória em assembly.
+* 	Anderson Aparecido do Carmo Frasão 			GRr20204069
+*	&
+* 	Eduardo Gobbo Willi Vasconcellos Gonçalves 	GRR20203892  
+*
+*  	Software Básico - CI1064
+********************************************************/
 
-// // funcoes auxiliares para teste
-// extern void iniciaAlocador();
-// extern void finalizaAlocador();
-// extern void* alocaMem(int num_bytes);
-// extern void liberaMem(void* bloco);
-// extern void imprimeMapa();
+// pode comentar stdio.h que funciona ,
+// foi declarado para evitar warnings na compilacao
+#include <stdio.h>
 # include "meuAlocador.h"
 // funcoes auxiliares
 void teste(void);

@@ -1,8 +1,11 @@
-# =======================================================
-#   Feito por Eduardo Gobbo Willi Vasconcellos Goncalves
-#   GRR20203892
-#   Makefile do programa FOTOMOSAICO
-#  ======================================================= 
+#********************************************************
+#   Implementação de um alocador de memória em assembly.
+# 	Anderson Aparecido do Carmo Frasão 			GRr20204069
+#	&
+# 	Eduardo Gobbo Willi Vasconcellos Gonçalves 	GRR20203892  
+#
+#  	Software Básico - CI1064
+#********************************************************
 
 CFLAGS = -Wall -ansi -g -std=c99
 PIE = -no-pie 
