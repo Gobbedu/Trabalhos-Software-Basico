@@ -22,7 +22,7 @@ all: main
 # gcc $(PIE) main.c $(OBJ) -o $(NAME)
 # usa o ligador ao inves do gcc pra juntar tudo
 main: nossomal.o
-	gcc main.c -c -g -o main.o
+	gcc $(PIE) main.c -c -g -o main.o
 	ld nossomal.o main.o -o $(NAME) $(DYLINK) -lc
 
 %.o: %.s

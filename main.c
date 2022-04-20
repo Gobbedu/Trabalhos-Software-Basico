@@ -1,14 +1,15 @@
-// #include <stdio.h>
+#include <stdio.h>
 
-// funcoes auxiliares para teste
-extern void iniciaAlocador();
-extern void finalizaAlocador();
-extern void* alocaMem(int num_bytes);
-extern void liberaMem(void* bloco);
-extern void imprimeMapa();
-
+// // funcoes auxiliares para teste
+// extern void iniciaAlocador();
+// extern void finalizaAlocador();
+// extern void* alocaMem(int num_bytes);
+// extern void liberaMem(void* bloco);
+// extern void imprimeMapa();
+# include "meuAlocador.h"
 // funcoes auxiliares
 void teste(void);
+void teste1(void);
 void teste2(void);
 void teste3(void);
 
@@ -16,12 +17,34 @@ void teste3(void);
 int main(void){
 	iniciaAlocador();
 
-	teste();
-	//teste2();
-	//teste3();
+	teste1();
+	// teste2();
+	// teste3();
 
 	finalizaAlocador();
 	return 0;
+}
+
+void teste1(void)
+{
+	void *p1, *p2, *p3;
+	long *aux;
+
+	// printf("alguma coisa\n");
+	imprimeMapa();
+	
+	p1 = alocaMem(4);
+	p2 = alocaMem(4);
+
+	
+	imprimeMapa();
+	liberaMem(p1);
+
+	// printf("\n");
+
+	liberaMem(p2);
+	imprimeMapa();
+
 }
 
 void teste(void)
@@ -49,14 +72,6 @@ void teste(void)
 	printf("free  p2: ");
 	liberaMem(p2);
 	imprimeMapa();
-
-	
-
-	
-
-	
-
-	
 }
 
 void teste2()

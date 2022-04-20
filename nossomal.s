@@ -9,9 +9,9 @@
 	circular:		.quad 0			# se olhos ja circularam na heap, $1, else $0, usamos pra
 	 								# decidir se é preciso aumentar a heap ou nao
 
-	strinit:		.string " "
+	strinit:		.string "\n"
 	strnodo:		.string "( %i | %i ).."
-	strfinal:		.string "final Heap asm\n"
+	strfinal:		.string "final Heap\n"
 
 .section .text
 
@@ -22,7 +22,7 @@
 iniciaAlocador:
 	# ||<= %brk
 	# | L | 4080 |  ---- 4080 ---- |<= %brk (um total de 4096)
-	# ^olhos
+	# ^0(olhos)
 	#            ^16(olhos)
 
 	# chama printf antes pra alocar o buffer e nn atrapalhar a brk
@@ -370,6 +370,17 @@ liberaMem:
 	movq LIVRE, %rax			# recebe endereco 16 bytes a frente de IG
 	movq %rax, -16(%rdi)		# IG[0] = LIVRE
 	
+	# empurra olho pra frente
+	movq final_heap, %rbx
+	movq olhos, %rax
+	addq $16, %rax
+	addq -8(%rdi), %rax
+	cmpq %rbx, %rax 			# se prox olhos < final_heap
+	jge naoproxliberamem
+
+	movq %rax, olhos
+
+naoproxliberamem:
 	jmp fusao
 
 	ret
@@ -414,21 +425,22 @@ printNODO:
 	ret
 
 imprimeMapa:
-	movq inicio_heap, %r12
+	movq inicio_heap, %r15
 	movq final_heap, %r13
 	subq $16, %r13
 
 	loopMapa:
+
 		#print("nodo", estado, tamanho);
-		movq %r12, %rdi
+		movq %r15, %rdi
 		call printNODO
 
 		# proximo nodo
-		movq 8(%r12), %rax				# endereco do proximo no em rax
-		addq %rax, %r12					# nodo = olhos + 8(olhos)
-		addq $16, %r12					# nodo = olhos + tam_bloco + 16
+		movq 8(%r15), %rax				# tamanho do no atual
+		addq %rax, %r15					# prox = atual + 8(olhos)
+		addq $16, %r15					# prox = atual + tam_bloco + 16
 
-		cmpq %r13, %r12					# if olho + 16 < final_heap, imprime proximo 
+		cmpq %r13, %r15					# if olho + 16 < final_heap, imprime proximo 
 		jl loopMapa
 
 		call PrintFinal
