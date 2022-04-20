@@ -14,19 +14,19 @@ DYLINK = -dynamic-linker /lib/x86_64-linux-gnu/ld-linux-x86-64.so.2 \
 NAME = a.out
 
 # codigo
-OBJ = nossomal.o
+OBJ = meuAlocador.o
 
 # REGRAS DE COMPILACAO
 all: main
 
 # gcc $(PIE) main.c $(OBJ) -o $(NAME)
 # usa o ligador ao inves do gcc pra juntar tudo
-main: nossomal.o
+main: meuAlocador.o
 	gcc $(PIE) main.c -c -g -o main.o
-	ld nossomal.o main.o -o $(NAME) $(DYLINK) -lc
+	ld meuAlocador.o main.o -o $(NAME) $(DYLINK) -lc
 
 %.o: %.s
-	as $(PIE) -g nossomal.s -o nossomal.o
+	as $(PIE) -g meuAlocador.s -o meuAlocador.o
 
 
 clean:
