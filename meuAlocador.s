@@ -10,7 +10,7 @@
 .section .data
 	inicio_heap: 	.quad 0			# valor inicial da heap, antes do iniciaAlocador
 	final_heap:		.quad 0			# valor final da heap, em qualquer dado momento
-	Block_size:		.quad 40#80		# tamanho dos blocos alocados, quando heap cheia
+	Block_size:		.quad 50#4080 # mais facil de ver # tamanho dos blocos alocados, quando heap cheia
 	LIVRE: 			.quad 0			# bool que representa um bloco LIVRE
 	OCUPA:			.quad 1			# bool que representa um bloco OCUPADO
 	
