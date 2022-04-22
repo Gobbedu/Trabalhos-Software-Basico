@@ -10,7 +10,7 @@
 .section .data
 	inicio_heap: 	.quad 0			# valor inicial da heap, antes do iniciaAlocador
 	final_heap:		.quad 0			# valor final da heap, em qualquer dado momento
-	Block_size:		.quad 4080		# tamanho dos blocos alocados, quando heap cheia
+	Block_size:		.quad 40#80		# tamanho dos blocos alocados, quando heap cheia
 	LIVRE: 			.quad 0			# bool que representa um bloco LIVRE
 	OCUPA:			.quad 1			# bool que representa um bloco OCUPADO
 	
@@ -21,6 +21,10 @@
 	strinit:		.string "\n"
 	strnodo:		.string "( %i | %i ).."
 	strfinal:		.string "final Heap\n"
+
+	strIG:			.string "################"
+	chVazio:		.string "-"
+	chCheio:		.string "+"
 
 .section .text
 
@@ -406,7 +410,8 @@ finalizaAlocador:
 fim:
 	ret
 
-# //////// pseudo codigo imprimeMapa ///////////
+
+# //////// pseudo codigo imprimeMapa bonito ///////////
 #   void *final, *olhos;
 # 	long *olho;
 # 	char state;
@@ -428,10 +433,35 @@ PrintFinal:
 		ret
 
 printNODO:
-	movq 0(%rdi), %rsi
-	movq 8(%rdi), %rdx
-	movq $strnodo, %rdi
+	movq 0(%rdi), %r12
+	movq 8(%rdi), %r14
+
+	movq $strIG, %rdi
 	call printf
+
+	cmpq %r12, LIVRE
+	je setaLivre
+	jne setaOcupado
+
+	setaLivre:
+		movq $chVazio, %r12
+		jmp loooop
+	setaOcupado:
+		movq $chCheio, %r12
+		jmp loooop
+
+	loooop:
+		cmpq $0, %r14
+		je fimloooop
+
+		movq %r12, %rdi
+		call printf
+
+		subq $1, %r14
+		jmp loooop
+
+
+	fimloooop:
 	ret
 
 imprimeMapa:
@@ -455,6 +485,3 @@ imprimeMapa:
 
 		call PrintFinal
 		ret
-
-
-

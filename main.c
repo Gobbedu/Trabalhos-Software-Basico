@@ -23,9 +23,10 @@ int main(void){
 	iniciaAlocador();
 
 	//teste();
+	teste1();
 	//teste2();
 	//teste3();
-	teste4();
+	// teste4();
 
 	finalizaAlocador();
 	return 0;
@@ -40,14 +41,13 @@ void teste1(void)
 	imprimeMapa();
 	
 	p1 = alocaMem(4);
+	imprimeMapa();
 	p2 = alocaMem(4);
-
-	
+	imprimeMapa();
+	p3 = alocaMem(10);
 	imprimeMapa();
 	liberaMem(p1);
-
-	// printf("\n");
-
+	imprimeMapa();
 	liberaMem(p2);
 	imprimeMapa();
 
