@@ -14,7 +14,7 @@ DYLINK = -dynamic-linker /lib/x86_64-linux-gnu/ld-linux-x86-64.so.2 \
 /usr/lib/x86_64-linux-gnu/crtn.o
 
 # nome do arquivo compilado
-NAME = a.out
+NAME = avalia
 
 # codigo
 OBJ = meuAlocador.o
@@ -23,7 +23,7 @@ OBJ = meuAlocador.o
 # codigoC = testesss
 
 # execucao normal
-codigoC = main
+codigoC = avalia
 
 # REGRAS DE COMPILACAO
 all: main
