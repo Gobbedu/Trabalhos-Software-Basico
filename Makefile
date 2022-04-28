@@ -19,14 +19,20 @@ NAME = a.out
 # codigo
 OBJ = meuAlocador.o
 
+# roda testes macabros pra tentar quebrar o codigo
+# codigoC = testesss
+
+# execucao normal
+codigoC = main
+
 # REGRAS DE COMPILACAO
 all: main
 
 # gcc $(PIE) main.c $(OBJ) -o $(NAME)
 # usa o ligador ao inves do gcc pra juntar tudo
 main: meuAlocador.o
-	gcc $(PIE) main.c -c -g -o main.o
-	ld meuAlocador.o main.o -o $(NAME) $(DYLINK) -lc
+	gcc $(PIE) $(codigoC).c -c -g -o $(codigoC).o
+	ld meuAlocador.o $(codigoC).o -o $(NAME) $(DYLINK) -lc
 
 %.o: %.s
 	as $(PIE) -g meuAlocador.s -o meuAlocador.o
@@ -37,3 +43,4 @@ clean:
 
 purge: clean
 	rm $(NAME)
+

@@ -28,8 +28,8 @@
 
 .section .text
 
-.globl iniciaAlocador, finalizaAlocador, alocaMem, liberaMem, imprimeMapa, PrintFinal
-# nao_cabe, nao_proximo, deu_volta,
+.globl iniciaAlocador, finalizaAlocador, alocaMem, liberaMem, imprimeMapa, olhos
+# olhos soh para debugar com testesss
 
 
 iniciaAlocador:
@@ -384,17 +384,6 @@ liberaMem:
 	movq LIVRE, %rax			# recebe endereco 16 bytes a frente de IG
 	movq %rax, -16(%rdi)		# IG[0] = LIVRE
 	
-	# empurra olho pra frente
-	movq final_heap, %rbx
-	movq olhos, %rax
-	addq $16, %rax
-	addq -8(%rdi), %rax
-	cmpq %rbx, %rax 			# se prox olhos < final_heap
-	jge naoproxliberamem
-
-	movq %rax, olhos
-
-naoproxliberamem:
 	jmp fusao
 
 	ret
@@ -484,4 +473,40 @@ imprimeMapa:
 		jl loopMapa
 
 		call PrintFinal
+		ret
+
+
+# PRINT MAPA LEGIVEL PARA DEBUGAR ----> 
+PrintFinalBUNITO:
+		movq $strfinal, %rdi
+		call printf
+		ret
+
+printNODOBUNITO:
+	movq 0(%rdi), %rsi
+	movq 8(%rdi), %rdx
+	movq $strnodo, %rdi
+	call printf
+	ret
+
+imprimeMapaBunito:
+	movq inicio_heap, %r15
+	movq final_heap, %r13
+	subq $16, %r13
+
+	loopMapaBUNITO:
+
+		#print("nodo", estado, tamanho);
+		movq %r15, %rdi
+		call printNODOBUNITO
+
+		# proximo nodo
+		movq 8(%r15), %rax				# tamanho do no atual
+		addq %rax, %r15					# prox = atual + 8(olhos)
+		addq $16, %r15					# prox = atual + tam_bloco + 16
+
+		cmpq %r13, %r15					# if olho + 16 < final_heap, imprime proximo 
+		jl loopMapaBUNITO
+
+		call PrintFinalBUNITO
 		ret
